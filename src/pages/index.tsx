@@ -17,12 +17,17 @@ export default function Home() {
         <div className="grid items-center gap-8 ">
             <p className="text-5xl text-white text-center">Exam Inviligation System</p>
             <div className="grid gap-4 flex-col items-center bg-white p-5 rounded-3xl ">
-              <input className="border-2 rounded-xl border-black p-3" type="text" placeholder="student@email.com"></input>
-              <input className="border-2 rounded-xl border-black p-3" type="password" placeholder="***@!##@!"></input>
+              <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="student@email.com"></input>
+              <input className="rounded-xl border-2 border-black p-3" type="password" placeholder="***@!##@!"></input>
               <hr/>
               <Link href="/admin/monitor">
-                <button className="w-full rounded-xl text-white bg-black text-xl p-2">
+                <button className="w-full rounded-xl border-2 border-black text-white bg-black text-xl p-2">
                   Student Sign In
+                </button>
+              </Link>
+              <Link href="/createaccount">
+                <button className="w-full rounded-xl border-2 border-black text-xl p-2">
+                  Create Account
                 </button>
               </Link>
             </div>      
