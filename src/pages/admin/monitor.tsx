@@ -1,5 +1,9 @@
+import Camera from "../components/Camera"
 export default function Monitor() {
     return(
-        <p>Placeholder!</p>
+        <div>
+            <Camera/>
+            <p>Placeholder!</p>
+        </div>
     )
 }
