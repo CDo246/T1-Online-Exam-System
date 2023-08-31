@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { BlackBackButton, BlackButton } from "~/components/button";
+import { Layout } from "~/components/layouts";
 
 export default function CreateAccount() {
     return (
-        <div className="grid min-h-screen bg-black items-center justify-center">
+        <Layout title="Create Account">
             <div className="grid gap-4 flex-col items-center bg-white p-5 rounded-3xl w-min-half">
                 <Link href="/">
                     <BlackBackButton/>
@@ -16,6 +17,6 @@ export default function CreateAccount() {
                 <p>Test text text text</p>
                 <BlackButton text="Create Account" />
             </div>
-        </div>
+        </Layout>
     )
 }
