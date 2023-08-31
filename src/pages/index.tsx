@@ -3,11 +3,9 @@ import Link from "next/link";
 import { api } from "~/utils/api";
 import { BlackButton, WhiteButton } from "~/components/button"
 import { CentredLayout } from "~/components/layouts";
-import { FormBox } from "~/components/formBox";
+import { FormBox } from "~/components/boxes";
 
 export default function Home() {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
   return ( 
     <CentredLayout title="Exam Inviligation Website" >
         <p className="text-5xl text-white text-center">Exam Inviligation System</p>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { GrowFormBox } from "~/components/formBox";
+import { GrowFormBox } from "~/components/boxes";
 import { SidebarLayout } from "~/components/layouts";
 import { Sidebar } from "~/components/sidebar";
 

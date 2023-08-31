@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BlackBackButton, BlackButton } from "~/components/button";
-import { FormBox } from "~/components/formBox";
+import { FormBox } from "~/components/boxes";
 import { CentredLayout } from "~/components/layouts";
 
 export default function EnterSession() {
