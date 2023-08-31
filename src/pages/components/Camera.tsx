@@ -5,8 +5,7 @@ import Dropdown from "./Dropdown";
 const Camera = ():JSX.Element => {
     const [deviceId, setDeviceId] = React.useState<number | null>(null);
     const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
-    //const [selectedDevice, setSelectedDevice] = React.useState<MediaDeviceInfo| null>(null);
-    const deviceSelected = React.useRef<MediaDeviceInfo|null>(null); //use ref doesnt refresh upon changing source of bug
+    const [selectedDevice, setSelectedDevice] = React.useState<MediaDeviceInfo| null>(null);
     const handleDevices = React.useCallback(
         (mediaDevices: MediaDeviceInfo[]) =>
             setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
@@ -15,9 +14,8 @@ const Camera = ():JSX.Element => {
 
     const handleDropdown = React.useCallback(
         (newDeviceIndex: number) =>
-            //setSelectedDevice(devices[newDeviceIndex]);
-            deviceSelected.current = devices[newDeviceIndex], 
-            [deviceSelected]
+            setSelectedDevice(devices[newDeviceIndex]),
+            [setSelectedDevice]
     );
 
     React.useEffect(
@@ -28,7 +26,7 @@ const Camera = ():JSX.Element => {
     );
     return (
     <div>
-        <Webcam audio = {false} videoConstraints = {{deviceId: deviceSelected.current?.deviceId}}/>
+        <Webcam audio = {false} videoConstraints = {{deviceId: selectedDevice?.deviceId}}/>
         <Dropdown list = {devices} handler = {handleDropdown} />
     </div>
     )
