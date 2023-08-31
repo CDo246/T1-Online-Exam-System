@@ -14,7 +14,7 @@ export default function Home() {
           <input className="rounded-xl border-2 border-black p-3" type="password" placeholder="***@!##@!"></input>
           <hr/>
           <Link href="/admin/monitor">
-            <BlackButton text="Student Sign In" />
+            <BlackButton text="Sign In" />
           </Link>
           <Link href="/createaccount">
             <WhiteButton text="Create Account" />
