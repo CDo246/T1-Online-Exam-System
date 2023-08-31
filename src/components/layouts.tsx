@@ -5,7 +5,7 @@ interface LayoutProps {
     title: String
 }
 
-export function Layout({children, title}: LayoutProps) {
+export function CentredLayout({children, title}: LayoutProps) {
     return(
         <>
             <Head>
@@ -17,6 +17,21 @@ export function Layout({children, title}: LayoutProps) {
                 <div className="grid items-center gap-8">
                     {children}
                 </div>
+            </main>
+        </>
+    )
+}
+
+export function SidebarLayout({children, title}: LayoutProps) {
+    return(
+        <>
+            <Head>
+                <title>{title}</title>
+                <meta name="description" content="This is a website for inviligating exams." />
+                <link rel="icon" href="/favicon.ico" />
+            </Head>
+            <main className="grid grid-cols-[auto_1fr] min-h-screen bg-black">
+                {children}
             </main>
         </>
     )

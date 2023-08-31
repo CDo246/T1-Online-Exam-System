@@ -3,7 +3,7 @@ import { BlackBackButton, BlackButton } from "~/components/button";
 import { FormBox } from "~/components/formBox";
 import { CentredLayout } from "~/components/layouts";
 
-export default function CreateAccount() {
+export default function EnterSession() {
     return (
         <CentredLayout title="Create Account">
             <FormBox>
@@ -11,11 +11,9 @@ export default function CreateAccount() {
                     <BlackBackButton/>
                 </Link>
                 <hr/>
-                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="First Name"></input>
-                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Last Name"></input>
-                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Educational Institution"></input>
+                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Session Code"></input>
                 <hr/>
-                <BlackButton text="Create Account" />
+                <BlackButton text="Enter Session" />
             </FormBox>
         </CentredLayout>
     )
