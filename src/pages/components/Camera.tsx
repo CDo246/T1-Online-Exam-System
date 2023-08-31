@@ -3,7 +3,6 @@ import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
 
 const Camera = ():JSX.Element => {
-    const [deviceId, setDeviceId] = React.useState<number | null>(null);
     const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
     const [selectedDevice, setSelectedDevice] = React.useState<MediaDeviceInfo| null>(null);
     const handleDevices = React.useCallback(
@@ -14,7 +13,7 @@ const Camera = ():JSX.Element => {
 
     const handleDropdown = React.useCallback(
         (newDeviceIndex: number) =>
-            setSelectedDevice(devices[newDeviceIndex]),
+            setSelectedDevice(devices[newDeviceIndex] ?? null),
             [setSelectedDevice]
     );
 
