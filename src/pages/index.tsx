@@ -2,6 +2,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
 import { api } from "~/utils/api";
+import {BlackButton, WhiteButton} from "~/components/button"
 
 export default function Home() {
   const hello = api.example.hello.useQuery({ text: "from tRPC" });
@@ -21,14 +22,10 @@ export default function Home() {
               <input className="rounded-xl border-2 border-black p-3" type="password" placeholder="***@!##@!"></input>
               <hr/>
               <Link href="/admin/monitor">
-                <button className="w-full rounded-xl border-2 border-black text-white bg-black text-xl p-2">
-                  Student Sign In
-                </button>
+                <BlackButton text="Student Sign In" />
               </Link>
               <Link href="/createaccount">
-                <button className="w-full rounded-xl border-2 border-black text-xl p-2">
-                  Create Account
-                </button>
+                <WhiteButton text="Create Account" />
               </Link>
             </div>      
         </div>
