@@ -13,7 +13,9 @@ export default function EnterSession() {
                 <hr/>
                 <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Session Code"></input>
                 <hr/>
+                <Link href = "/student/session">
                 <BlackButton text="Enter Session" />
+                </Link>
             </FormBox>
         </CentredLayout>
     )
