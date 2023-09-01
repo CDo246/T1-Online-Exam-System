@@ -13,7 +13,7 @@ export default function Home() {
           <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="student@email.com"></input>
           <input className="rounded-xl border-2 border-black p-3" type="password" placeholder="***@!##@!"></input>
           <hr/>
-          <Link href="/admin/monitor">
+          <Link href="/student/entersession">
             <BlackButton text="Sign In" />
           </Link>
           <Link href="/createaccount">
