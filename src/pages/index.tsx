@@ -33,7 +33,7 @@ export default function Home() {
           placeholder="***@!##@!"
         ></input>
         <hr />
-        <Link href="/admin/monitor">
+        <Link href="/student/entersession">
           <BlackButton text="Sign In" />
         </Link>
         <Link href="/createaccount">
