@@ -1,8 +1,6 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -29,3 +27,12 @@ jobs:
           DISCORD_CLIENT_ID: ""
           DISCORD_CLIENT_SECRET: ""
       - run: yarn postinstall
+
+  prettier-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check code formatting with Prettier
+        run: yarn prettier:check || echo "Prettier check failed. Make sure you run 'yarn prettier-format' to format your code."
+
+
