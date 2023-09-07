@@ -15,20 +15,21 @@ class CloudVision {
     async analyseImage(base64ImageData:string) {
         console.log("attempting to analyse screenshot");
         try {
+            //Replace with Key
             const apiKey = "";
             const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
             const base64Trimmed = base64ImageData.slice(23);
 
             var requestData = {
-                "requests":[
+                requests:[
                   {
-                    "image":{
-                      "content": {base64Trimmed}
+                    image:{
+                      content: base64Trimmed
                     },
-                    "features":[
+                    features:[
                       {
-                        "type":"LABEL_DETECTION",
-                        "maxResults": 5
+                        type: "LABEL_DETECTION",
+                        maxResults: 5
                       }
                     ]
                   }
