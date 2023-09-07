@@ -6,6 +6,7 @@ import {
   type DefaultSession,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
 
@@ -47,19 +48,67 @@ export const authOptions: NextAuthOptions = {
   },
   adapter: PrismaAdapter(prisma),
   providers: [
-    DiscordProvider({
-      clientId: env.DISCORD_CLIENT_ID,
-      clientSecret: env.DISCORD_CLIENT_SECRET,
+    CredentialsProvider({
+      // The name to display on the sign in form (e.g. "Sign in with...")
+      name: "Student Login",
+      // `credentials` is used to generate a form on the sign in page.
+      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
+      // e.g. domain, username, password, 2FA token, etc.
+      // You can pass any HTML attribute to the <input> tag through the object.
+      credentials: {
+        studentId: {
+          label: "Student ID",
+          type: "number",
+          placeholder: "12345",
+        },
+        seatNumber: { label: "Seat Number", type: "string" },
+      },
+      async authorize(credentials, req) {
+        // Add logic here to look up the user from the credentials supplied
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const user = await prisma.user.findFirst({
+          where: {
+            student: {
+              studentId: parseInt(credentials!.studentId),
+              sessions: {
+                some: {
+                  seatNumber: credentials!.seatNumber,
+                },
+              },
+            },
+          },
+        });
+        return user;
+      },
     }),
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
+    CredentialsProvider({
+      // The name to display on the sign in form (e.g. "Sign in with...")
+      name: "Examiner Login",
+      // `credentials` is used to generate a form on the sign in page.
+      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
+      // e.g. domain, username, password, 2FA token, etc.
+      // You can pass any HTML attribute to the <input> tag through the object.
+      credentials: {
+        examinerId: {
+          label: "Examiner ID",
+          type: "number",
+          placeholder: "12345",
+        },
+        password: { label: "Password", type: "string" },
+      },
+      async authorize(credentials, req) {
+        // Add logic here to look up the user from the credentials supplied
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const user = await prisma.user.findFirst({
+          where: {
+            examiner: {
+              examinerId: parseInt(credentials!.examinerId),
+            },
+          },
+        });
+        return user;
+      },
+    })
   ],
 };
 

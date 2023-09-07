@@ -7,9 +7,9 @@ generator client {
 
 // yarn add -D prisma-erd-generator @mermaid-js/mermaid-cli
 // npx prisma generate
-generator erd {
-  provider = "prisma-erd-generator"
-}
+// generator erd {
+//   provider = "prisma-erd-generator"
+// }
 
 datasource db {
   provider = "sqlite"
@@ -54,8 +54,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   role          String // 'examiner', 'student', 'admin'
-  Student       Student?
-  Examiner      Examiner?
+  student       Student?
+  examiner      Examiner?
 }
 
 model VerificationToken {
@@ -87,7 +87,7 @@ model Examiner {
 // Structure to track each exam session created by a student, if there was any suspicious activity, and store list of any notifications or recordings.
 model ExamSession {
   sessionId          Int            @id @default(autoincrement())
-  seatNumber         Int
+  seatNumber         String
   startTime          DateTime
   endTime            DateTime?
   suspiciousActivity Boolean        @default(false) // Field for tracking suspicious activity
