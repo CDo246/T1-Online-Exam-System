@@ -1,6 +1,8 @@
-import React from "react";
+import React, {useState} from "react";
 import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
+import CloudVision from "./CloudVision";
+import { type } from "os";
 
 const Camera = ():JSX.Element => {
     const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -8,6 +10,7 @@ const Camera = ():JSX.Element => {
     const [capturing, setCapturing] = React.useState<boolean>(false);
     const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
     const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
+    const cameraRef = React.useRef<Webcam | null>(null);
 
     const handleDevices = React.useCallback(
         (mediaDevices: MediaDeviceInfo[]) =>{
@@ -83,6 +86,25 @@ const Camera = ():JSX.Element => {
         [recordedChunks]
     );
 
+    var labels;
+    const [imgSrc, setImgSrc] = useState(null);
+
+    const visionAPI = new CloudVision();
+    const screencaptureLabels:string[] = [];
+    const handleAnalyse = React.useCallback( async ()=> {
+        if(cameraRef.current){
+            const imageSrc = cameraRef.current.getScreenshot();
+            if(imageSrc != null){
+                const imageLabels = visionAPI.analyseImage(imageSrc);
+                labels = imageLabels;
+            }
+            
+            
+            // setImgSrc(imageSrc);
+        }
+    }, [cameraRef]
+    );
+
     React.useEffect(
         () => {
             navigator.mediaDevices.enumerateDevices().then(handleDevices);
@@ -92,7 +114,7 @@ const Camera = ():JSX.Element => {
 
     return (
     <div>
-        <Webcam audio = {false} videoConstraints = {{deviceId: selectedDevice?.deviceId}}/>
+        <Webcam audio = {false} videoConstraints = {{deviceId: selectedDevice?.deviceId}} ref={cameraRef}/>
         {capturing ? (
             <button onClick = {handleStopCaptureClick}> Stop Capture</button>
         ) : (
@@ -104,6 +126,19 @@ const Camera = ():JSX.Element => {
         {recordedChunks.length > 0 && (
             <button onClick = {handleDownload}>Download</button>
         )}
+        
+        <button onClick={handleAnalyse}>Analyse image</button>
+        {
+            imgSrc && (
+                <img src={imgSrc}/>
+            )
+        }
+
+        {labels && (
+            <p>{labels[0]}</p>
+        )
+            
+        }
     </div>
     )
 }; 
