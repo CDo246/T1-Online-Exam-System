@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build-lint:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,12 +27,7 @@ jobs:
           DISCORD_CLIENT_ID: ""
           DISCORD_CLIENT_SECRET: ""
       - run: yarn postinstall
-
-  prettier-check:
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Check code formatting with Prettier
-        run: yarn prettier:check || echo "Prettier check failed. Make sure you run 'yarn prettier:format' to format your code."
+        run: yarn prettier:check"
 
 
