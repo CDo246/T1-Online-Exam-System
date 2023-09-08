@@ -28,6 +28,6 @@ jobs:
           DISCORD_CLIENT_SECRET: ""
       - run: yarn postinstall
       - name: Check code formatting with Prettier
-        run: yarn prettier:check"
+        run: yarn prettier:check
 
 
