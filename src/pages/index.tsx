@@ -30,7 +30,7 @@ export default function Home() {
         <input
           className="rounded-xl border-2 border-black p-3"
           type="password"
-          placeholder="***@!##@!"
+          placeholder="*******"
         ></input>
         <hr />
         <Link href="/admin/monitor">

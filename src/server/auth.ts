@@ -5,7 +5,6 @@ import {
   type NextAuthOptions,
   type DefaultSession,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
@@ -110,6 +109,9 @@ export const authOptions: NextAuthOptions = {
       },
     })
   ],
+  pages: {
+    signIn: "/auth/signin",
+  }
 };
 
 /**
