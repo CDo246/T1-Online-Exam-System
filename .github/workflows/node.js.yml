@@ -33,6 +33,6 @@ jobs:
 
     steps:
       - name: Check code formatting with Prettier
-        run: yarn prettier:check || echo "Prettier check failed. Make sure you run 'yarn prettier-format' to format your code."
+        run: yarn prettier:check || echo "Prettier check failed. Make sure you run 'yarn prettier:format' to format your code."
 
 
