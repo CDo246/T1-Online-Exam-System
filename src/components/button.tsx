@@ -1,5 +1,5 @@
 interface ButtonText {
-    text:String
+    text: string,
 }
 
 export function BlackButton({text}: ButtonText) {

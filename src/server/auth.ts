@@ -50,6 +50,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       // The name to display on the sign in form (e.g. "Sign in with...")
       name: "Student Login",
+      id: "student-login",
       // `credentials` is used to generate a form on the sign in page.
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
       // e.g. domain, username, password, 2FA token, etc.
@@ -63,17 +64,17 @@ export const authOptions: NextAuthOptions = {
         seatNumber: { label: "Seat Number", type: "string" },
       },
       async authorize(credentials, req) {
+        if(!credentials) return null
         // Add logic here to look up the user from the credentials supplied
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const user = await prisma.user.findFirst({
           where: {
-            student: {
-              studentId: parseInt(credentials!.studentId),
-              sessions: {
+            Student: {
+              studentId: parseInt(credentials.studentId),
+/*               sessions: {
                 some: {
-                  seatNumber: credentials!.seatNumber,
+                  seatNumber: parseInt(credentials!.seatNumber),
                 },
-              },
+              }, */
             },
           },
         });
@@ -83,6 +84,7 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       // The name to display on the sign in form (e.g. "Sign in with...")
       name: "Examiner Login",
+      id: "examiner-login",
       // `credentials` is used to generate a form on the sign in page.
       // You can specify which fields should be submitted, by adding keys to the `credentials` object.
       // e.g. domain, username, password, 2FA token, etc.
@@ -100,7 +102,7 @@ export const authOptions: NextAuthOptions = {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const user = await prisma.user.findFirst({
           where: {
-            examiner: {
+            Examiner: {
               examinerId: parseInt(credentials!.examinerId),
             },
           },
@@ -110,7 +112,7 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/",
   }
 };
 

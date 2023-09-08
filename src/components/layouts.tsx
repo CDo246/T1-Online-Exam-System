@@ -2,7 +2,7 @@ import Head from "next/head";
 
 interface LayoutProps {
     children: React.ReactNode,
-    title: String
+    title: string,
 }
 
 export function CentredLayout({children, title}: LayoutProps) {
