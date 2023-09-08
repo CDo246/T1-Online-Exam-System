@@ -1,5 +1,5 @@
 interface BoxContent {
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function FormBox({ children }: BoxContent) {
