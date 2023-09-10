@@ -11,10 +11,10 @@ export default function CreateAccount() {
                     <BlackBackButton/>
                 </Link>
                 <hr/>
-                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="First Name"></input>
-                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Last Name"></input>
-                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Educational Institution"></input>
-                <hr/>
+                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Name"></input>
+                <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="Email Address"></input>
+                <input className="rounded-xl border-2 border-black p-3" type="password" placeholder="●●●●●●"></input>
+                <hr className="min-w-[35vw]"/>
                 <BlackButton text="Create Account" />
             </FormBox>
         </CentredLayout>
