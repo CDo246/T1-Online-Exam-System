@@ -68,70 +68,35 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
-      // The name to display on the sign in form (e.g. "Sign in with...")
-      name: "Student Login",
-      id: "student-login",
+      name: "Login", // The name to display on the sign in form (e.g. "Sign in with...")
+      id: "login",
 
       credentials: {
-        studentId: {
-          label: "Student ID",
-          type: "number",
-          placeholder: "0",
+        email: {
+          label: "Email Address",
+          type: "text",
+          placeholder: "name@example.com",
         },
-        seatNumber: { 
-          label: "Seat Number", 
-          type: "number",
-          placeholder: "0",
+        password: { 
+          label: "Password", 
+          type: "password",
         },
       },
+
       async authorize(credentials, req) {
         if(!credentials) return null
+        console.log(credentials)
         // Add logic here to look up the user from the credentials supplied
         const user = await prisma.user.findFirst({
           where: {
-            student: {
-              studentId: parseInt(credentials.studentId),
-/*               sessions: {
-                some: {
-                  seatNumber: parseInt(credentials!.seatNumber),
-                },
-              }, */
-            },
+            email: credentials.email,
+            //TODO: This needs password authentication!
           },
         });
         console.log(user)
         return user;
       },
     }),
-    CredentialsProvider({
-      // The name to display on the sign in form (e.g. "Sign in with...")
-      name: "Examiner Login",
-      id: "examiner-login",
-      // `credentials` is used to generate a form on the sign in page.
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
-      credentials: {
-        examinerId: {
-          label: "Examiner ID",
-          type: "number",
-          placeholder: "12345",
-        },
-        password: { label: "Password", type: "string" },
-      },
-      async authorize(credentials, req) {
-        // Add logic here to look up the user from the credentials supplied
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const user = await prisma.user.findFirst({
-          where: {
-            examiner: {
-              examinerId: parseInt(credentials!.examinerId),
-            },
-          },
-        });
-        return user;
-      },
-    })
   ],
   pages: {
     //signIn: "/",

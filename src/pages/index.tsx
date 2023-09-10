@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "~/utils/api";
 import { BlackButton, WhiteButton } from "~/components/button";
 import { CentredLayout } from "~/components/layouts";
@@ -8,13 +9,14 @@ import { FormBox } from "~/components/boxes";
 import { getCsrfToken, getSession, signIn, signOut, useSession } from "next-auth/react";
 import { InputField } from "~/components/input";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
+import { useState } from "react";
 
 export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { data: session, status } = useSession();
-  console.log(csrfToken)
-  console.log("Session: ")
-  console.log(session)
-  console.log(status)
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   return (
     <CentredLayout title="Exam Inviligation Website">
@@ -22,43 +24,38 @@ export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof g
         Exam Inviligation System
       </p>
       <FormBox>
-        {session && (
-          <div>
-            Signed in as {session.user.email} <br />
-            <button onClick={() => signOut()}>Sign out</button>
-          </div>
-        )}
-
-        <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-        {/* <input name="credentials" type="hidden" defaultValue="student-login" /> */}
-        <InputField name="studentId" type="text" placeholder="Student ID"/>
-        <InputField name="seatNumber" type="text" placeholder="Seat Number"/>
-        <a onClick={() => signIn("student-login", {studentId: 0, seatNumber: 0})
+        {loginError && <div className="rounded-full bg-red-700 grid grid-cols-[1fr_auto_1fr]">
+          <div/>
+          <p className="text-white">Sign In Error ({loginError})</p>
+          <a className="text-white text-right px-2" onClick={() => setLoginError(null)}>X</a>
+        </div> }
+        <input name="csrfToken" type="hidden" defaultValue={csrfToken}/>
+        <label>Email Address:</label>
+        <InputField name="email" type="text" placeholder="Email Address" value={email} setValue={setEmail}/>
+        <label>Password:</label>
+        <InputField name="password" type="password" placeholder="●●●●●●" value={password} setValue={setPassword}/>
+        <a onClick={() => signIn("login", {email: email, password: password, redirect: false})
           .then(res => {
-            console.log("Client signin")
-            getSession().then(res => console.log("Session" + res))
+            setLoginError(res?.error || null)
+            console.log("Client Sign-In Result: ")
             console.log(res)
-            console.log(session)
-            console.log(status)
+            getSession().then(res => {
+              console.log("Session Created: ")
+              console.log(res)
+              if(res === null) return
+              //Redirect upon successful login
+              router.push("/student/entersession") //TODO: Update temp redirect home
+            })
           })
         }>
-          <BlackButton text="Student Sign In" />
+          <BlackButton text="Sign In" />
         </a>
         
         <hr />
-        <form className="grid gap-4" method="post" action="/api/auth/callback/credentials">
-          <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-          <InputField name="username" type="text" placeholder="Examiner ID"/>
-          <InputField name="password" type="password" placeholder="Password"/>
-          <a type="submit">
-            <BlackButton text="Examiner Sign In" />
-          </a>
-        </form>
-        <hr/>
+
         <Link href="/createaccount">
-          <BlackButton text="Create Account" />
+          <WhiteButton text="Create Account" />
         </Link>
-        <button onClick={() => signIn()}>asdfsadg</button>
       </FormBox>
     </CentredLayout>
   );
