@@ -12,22 +12,23 @@ import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { data: session, status } = useSession();
   console.log(csrfToken)
-  console.log("Session: " + session)
+  console.log("Session: ")
+  console.log(session)
   console.log(status)
 
   return (
     <CentredLayout title="Exam Inviligation Website">
-      {session && (
-        <div>
-          Signed in as {session.user.email} <br />
-          <button onClick={() => signOut()}>Sign out</button>
-        </div>
-      )}
       <p className="text-center text-5xl text-white">
         Exam Inviligation System
       </p>
       <FormBox>
-        
+        {session && (
+          <div>
+            Signed in as {session.user.email} <br />
+            <button onClick={() => signOut()}>Sign out</button>
+          </div>
+        )}
+
         <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
         {/* <input name="credentials" type="hidden" defaultValue="student-login" /> */}
         <InputField name="studentId" type="text" placeholder="Student ID"/>

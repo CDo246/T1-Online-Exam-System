@@ -36,10 +36,14 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: "jwt"
+  },
   callbacks: {
 /*     async session({ session, user }) { 
       console.log("\n\n\n Session Test")
       console.log(session)
+      console.log(user)
 
       return {
         ...session,
@@ -67,17 +71,18 @@ export const authOptions: NextAuthOptions = {
       // The name to display on the sign in form (e.g. "Sign in with...")
       name: "Student Login",
       id: "student-login",
-      // `credentials` is used to generate a form on the sign in page.
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
+
       credentials: {
         studentId: {
           label: "Student ID",
           type: "number",
-          placeholder: "12345",
+          placeholder: "0",
         },
-        seatNumber: { label: "Seat Number", type: "string" },
+        seatNumber: { 
+          label: "Seat Number", 
+          type: "number",
+          placeholder: "0",
+        },
       },
       async authorize(credentials, req) {
         if(!credentials) return null
