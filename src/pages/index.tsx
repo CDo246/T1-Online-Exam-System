@@ -5,13 +5,15 @@ import { api } from "~/utils/api";
 import { BlackButton, WhiteButton } from "~/components/button";
 import { CentredLayout } from "~/components/layouts";
 import { FormBox } from "~/components/boxes";
-import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react";
+import { getCsrfToken, getSession, signIn, signOut, useSession } from "next-auth/react";
 import { InputField } from "~/components/input";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 
 export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   console.log(csrfToken)
+  console.log("Session: " + session)
+  console.log(status)
 
   return (
     <CentredLayout title="Exam Inviligation Website">
@@ -25,15 +27,23 @@ export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof g
         Exam Inviligation System
       </p>
       <FormBox>
-        <form className="grid gap-4" method="post" action="/api/auth/callback/student-login" onSubmit={()}>
-          <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-          {/* <input name="credentials" type="hidden" defaultValue="student-login" /> */}
-          <InputField name="studentId" type="text" placeholder="Student ID"/>
-          <InputField name="seatNumber" type="text" placeholder="Seat Number"/>
-          <a type="submit">
-            <BlackButton text="Student Sign In" />
-          </a>
-        </form>
+        
+        <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
+        {/* <input name="credentials" type="hidden" defaultValue="student-login" /> */}
+        <InputField name="studentId" type="text" placeholder="Student ID"/>
+        <InputField name="seatNumber" type="text" placeholder="Seat Number"/>
+        <a onClick={() => signIn("student-login", {studentId: 0, seatNumber: 0})
+          .then(res => {
+            console.log("Client signin")
+            getSession().then(res => console.log("Session" + res))
+            console.log(res)
+            console.log(session)
+            console.log(status)
+          })
+        }>
+          <BlackButton text="Student Sign In" />
+        </a>
+        
         <hr />
         <form className="grid gap-4" method="post" action="/api/auth/callback/credentials">
           <input name="csrfToken" type="hidden" defaultValue={csrfToken} />

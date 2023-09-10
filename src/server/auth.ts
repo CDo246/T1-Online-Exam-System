@@ -37,13 +37,29 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+/*     async session({ session, user }) { 
+      console.log("\n\n\n Session Test")
+      console.log(session)
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        },
+      }
+    }, */
+
+    async signIn(profile) {
+      //Handles signing in
+      // https://next-auth.js.org/configuration/callbacks
+
+      console.log("\n\n\n signIn test")
+      console.log(profile)
+      const isAllowedToSignIn = true
+      if (isAllowedToSignIn) return true
+      else return false // Return false to display a default error message
+    },
   },
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -68,7 +84,7 @@ export const authOptions: NextAuthOptions = {
         // Add logic here to look up the user from the credentials supplied
         const user = await prisma.user.findFirst({
           where: {
-            Student: {
+            student: {
               studentId: parseInt(credentials.studentId),
 /*               sessions: {
                 some: {
@@ -78,6 +94,7 @@ export const authOptions: NextAuthOptions = {
             },
           },
         });
+        console.log(user)
         return user;
       },
     }),
@@ -102,7 +119,7 @@ export const authOptions: NextAuthOptions = {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const user = await prisma.user.findFirst({
           where: {
-            Examiner: {
+            examiner: {
               examinerId: parseInt(credentials!.examinerId),
             },
           },
@@ -112,7 +129,7 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   pages: {
-    signIn: "/",
+    //signIn: "/",
   }
 };
 

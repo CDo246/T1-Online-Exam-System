@@ -29,9 +29,6 @@ export default function Session() {
                     <div className="h-[200px] bg-white rounded" />
                     <div className="h-[200px] bg-white rounded" />
                     <div className="h-[200px] bg-white rounded" />
-
-
-
                 </div>
             </div>
         </SidebarLayout>
