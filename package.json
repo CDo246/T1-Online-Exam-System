@@ -1,6 +1,6 @@
 {
   "name": "exam-system",
-  "version": "0.1.0",
+  "version": "1.19.2",
   "private": true,
   "scripts": {
     "build": "next build",
@@ -22,6 +22,7 @@
     "next-auth": "^4.22.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-webcam": "^7.1.1",
     "superjson": "^1.13.1",
     "zod": "^3.21.4"
   },

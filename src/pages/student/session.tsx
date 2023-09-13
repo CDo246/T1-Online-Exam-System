@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Camera from "../../components/Camera"
 import { GrowFormBox } from "~/components/boxes";
 import { SidebarLayout } from "~/components/layouts";
 import { Sidebar } from "~/components/sidebar";
@@ -18,6 +19,7 @@ export default function Session() {
             <div className="items-center justify-center p-10">
                 <div className="flex flex-col min-h-full margin-auto"> 
                     <GrowFormBox>
+                        <Camera/>
                     </GrowFormBox>
                 </div>
             </div>
