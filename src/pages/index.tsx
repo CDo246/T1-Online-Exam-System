@@ -19,6 +19,7 @@ export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof g
   const [loginError, setLoginError] = useState<string | null>(null)
 
   return (
+<<<<<<< HEAD
     <CentredLayout title="Exam Inviligation Website">
       <p className="text-center text-5xl text-white">
         Exam Inviligation System
@@ -58,6 +59,35 @@ export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof g
         </Link>
       </FormBox>
     </CentredLayout>
+=======
+    <>
+      <Head>
+        <title>Exam Inviligation Page</title>
+        <meta name="description" content="This is a website for inviligating exams." />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-black">
+        <div className="grid items-center gap-8 ">
+            <p className="text-5xl text-white text-center">Exam Inviligation System</p>
+            <div className="grid gap-4 flex-col items-center bg-white p-5 rounded-3xl ">
+              <input className="rounded-xl border-2 border-black p-3" type="text" placeholder="student@email.com"></input>
+              <input className="rounded-xl border-2 border-black p-3" type="password" placeholder="***@!##@!"></input>
+              <hr/>
+              <Link href="/admin/monitor">
+                <button className="w-full rounded-xl border-2 border-black text-white bg-black text-xl p-2">
+                  Student Sign In
+                </button>
+              </Link>
+              <Link href="/createaccount">
+                <button className="w-full rounded-xl border-2 border-black text-xl p-2">
+                  Create Account
+                </button>
+              </Link>
+            </div>      
+        </div>
+      </main>
+    </>
+>>>>>>> main
   );
 }
 
