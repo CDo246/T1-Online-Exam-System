@@ -26,7 +26,7 @@ export default function Home({ csrfToken }: InferGetServerSidePropsType<typeof g
       <FormBox>
         {loginError && <div className="rounded-full bg-red-700 grid grid-cols-[1fr_auto_1fr]">
           <div/>
-          <p className="text-white">Sign In Error ({loginError})</p>
+          <p className="text-white">Sign In Error ({JSON.parse(loginError).errors})</p>
           <a className="text-white text-right px-2" onClick={() => setLoginError(null)}>X</a>
         </div> }
         <input name="csrfToken" type="hidden" defaultValue={csrfToken}/>

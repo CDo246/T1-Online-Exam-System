@@ -1,4 +1,5 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { createHash } from "crypto";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
@@ -90,11 +91,17 @@ export const authOptions: NextAuthOptions = {
         const user = await prisma.user.findFirst({
           where: {
             email: credentials.email,
-            //TODO: This needs password authentication!
           },
         });
-        console.log(user)
-        return user;
+
+        if(user === null) throw new Error( JSON.stringify({ errors: "User Not Found", status: false }))
+
+        console.log(user.passwordSalt)
+
+        const password = createHash('sha256').update(`${user.passwordSalt}${credentials.password}`).digest('hex')
+        if(password === user.password) return user
+        throw new Error( JSON.stringify({ errors: "Incorrect Password", status: false }))
+        return null
       },
     }),
   ],
