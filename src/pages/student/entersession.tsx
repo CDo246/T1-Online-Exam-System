@@ -15,7 +15,7 @@ export default function EnterSession({
         {/* TODO: Remove this temp session info */}
         {session && (
           <div>
-            Signed in as {session.user.email || "placeholder"} <br />
+            Signed in as {session.user.email ?? "placeholder"} <br />
             <button onClick={() => signOut()}>Sign out</button>
           </div>
         )}

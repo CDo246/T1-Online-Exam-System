@@ -55,7 +55,7 @@ export const authOptions: NextAuthOptions = {
       }
     }, */
 
-    async signIn(profile) {
+    signIn(profile) {
       //Handles signing in
       // https://next-auth.js.org/configuration/callbacks
 

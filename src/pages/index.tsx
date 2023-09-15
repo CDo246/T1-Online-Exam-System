@@ -70,7 +70,7 @@ export default function Home({
               password: password,
               redirect: false,
             }).then((res) => {
-              setLoginError(res?.error || null);
+              setLoginError(res?.error ?? null);
               console.log("Client Sign-In Result: ");
               console.log(res);
               getSession().then((res) => {

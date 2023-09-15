@@ -86,7 +86,7 @@ const Camera = (): JSX.Element => {
     }
   }, [recordedChunks]);
 
-  var labels;
+  let labels;
   const [imgSrc, setImgSrc] = useState(null);
 
   const visionAPI = new CloudVision();
@@ -95,7 +95,7 @@ const Camera = (): JSX.Element => {
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
-        const imageLabels = visionAPI.analyseImage(imageSrc);
+        const imageLabels = await visionAPI.analyseImage(imageSrc);
         labels = imageLabels;
       }
 

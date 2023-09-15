@@ -26,7 +26,7 @@ const Camera = (): JSX.Element => {
   const [imgSrc, setImgSrc] = useState();
 
   const capture = React.useCallback(async () => {
-    const imgSrc = cameraRef.current.getScreenshot();
+    const imgSrc = await cameraRef.current.getScreenshot();
     setImgSrc(imgSrc);
   }, [cameraRef]);
 

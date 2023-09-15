@@ -20,7 +20,7 @@ class CloudVision {
       const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
       const base64Trimmed = base64ImageData.slice(23);
 
-      var requestData = {
+      const requestData = {
         requests: [
           {
             image: {
