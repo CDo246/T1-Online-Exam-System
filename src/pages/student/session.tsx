@@ -5,7 +5,6 @@ import { SidebarLayout } from "~/components/layouts";
 import { Sidebar } from "~/components/sidebar";
 
 export default function Session() {
-  CI/add_initial_action
     return (
         <SidebarLayout title="Session">               
             <Sidebar>
@@ -27,4 +26,3 @@ export default function Session() {
         </SidebarLayout>
     )
 }
-main

@@ -1,11 +1,11 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { createHash } from "crypto";
 import { type GetServerSidePropsContext } from "next";
 import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
 } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { env } from "~/env.mjs";
 import { prisma } from "~/server/db";
@@ -37,50 +37,74 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authOptions: NextAuthOptions = {
+  session: {
+    strategy: "jwt"
+  },
   callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
+/*     async session({ session, user }) { 
+      console.log("\n\n\n Session Test")
+      console.log(session)
+      console.log(user)
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        },
+      }
+    }, */
+
+    async signIn(profile) {
+      //Handles signing in
+      // https://next-auth.js.org/configuration/callbacks
+
+      console.log("\n\n\n signIn test")
+      console.log(profile)
+      const isAllowedToSignIn = true
+      if (isAllowedToSignIn) return true
+      else return false // Return false to display a default error message
+    },
   },
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
-      // The name to display on the sign in form (e.g. "Sign in with...")
-      name: "Student Login",
-      // `credentials` is used to generate a form on the sign in page.
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
+      name: "Login", // The name to display on the sign in form (e.g. "Sign in with...")
+      id: "login",
+
       credentials: {
-        studentId: {
-          label: "Student ID",
-          type: "number",
-          placeholder: "12345",
+        email: {
+          label: "Email Address",
+          type: "text",
+          placeholder: "name@example.com",
         },
-        seatNumber: { label: "Seat Number", type: "string" },
+        password: { 
+          label: "Password", 
+          type: "password",
+        },
       },
+
       async authorize(credentials, req) {
+        if(!credentials) return null
+        console.log(credentials)
         // Add logic here to look up the user from the credentials supplied
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const user = await prisma.user.findFirst({
           where: {
-            student: {
-              studentId: parseInt(credentials!.studentId),
-              sessions: {
-                some: {
-                  seatNumber: credentials!.seatNumber,
-                },
-              },
-            },
+            email: credentials.email,
           },
         });
-        return user;
+
+        if(user === null) throw new Error( JSON.stringify({ errors: "User Not Found", status: false }))
+
+        console.log(user.passwordSalt)
+
+        const password = createHash('sha256').update(`${user.passwordSalt}${credentials.password}`).digest('hex')
+        if(password === user.password) return user
+        throw new Error( JSON.stringify({ errors: "Incorrect Password", status: false }))
+        return null
       },
     }),
+<<<<<<< HEAD
     CredentialsProvider({
       // The name to display on the sign in form (e.g. "Sign in with...")
       name: "Examiner Login",
@@ -109,7 +133,12 @@ export const authOptions: NextAuthOptions = {
         return user;
       },
     }),
+=======
+>>>>>>> 4b728de044fc40a718209dbc39175544421ad692
   ],
+  pages: {
+    //signIn: "/",
+  }
 };
 
 /**

@@ -1,5 +1,9 @@
 interface ButtonText {
+<<<<<<< HEAD
   text: string;
+=======
+    text: string,
+>>>>>>> 4b728de044fc40a718209dbc39175544421ad692
 }
 
 export function BlackButton({ text }: ButtonText) {

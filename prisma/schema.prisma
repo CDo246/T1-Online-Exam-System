@@ -51,6 +51,8 @@ model User {
   name          String?
   email         String?   @unique
   emailVerified DateTime?
+  password      String
+  passwordSalt  String
   accounts      Account[]
   sessions      Session[]
   role          String // 'examiner', 'student', 'admin'

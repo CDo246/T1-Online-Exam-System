@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef, useCallback, useState } from "react";
 import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
 
@@ -23,9 +23,18 @@ const Camera = ():JSX.Element => {
         },
         [handleDevices]
     );
+
+    const cameraRef = useRef<any>();
+    const [imgSrc, setImgSrc] = useState();
+
+    const capture = React.useCallback(async()=>{
+        const imgSrc = cameraRef.current.getScreenshot();
+        setImgSrc(imgSrc);
+    }, [cameraRef])
+
     return (
     <div>
-        <Webcam audio = {false} videoConstraints = {{deviceId: selectedDevice?.deviceId}}/>
+        <Webcam audio = {false} videoConstraints = {{deviceId: selectedDevice?.deviceId}} mirrored = {true}/>
         <Dropdown list = {devices} handler = {handleDropdown} />
     </div>
     )

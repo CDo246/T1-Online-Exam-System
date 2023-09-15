@@ -1,8 +1,13 @@
 import Head from "next/head";
 
 interface LayoutProps {
+<<<<<<< HEAD
   children: React.ReactNode;
   title: string;
+=======
+    children: React.ReactNode,
+    title: string,
+>>>>>>> 4b728de044fc40a718209dbc39175544421ad692
 }
 
 export function CentredLayout({ children, title }: LayoutProps) {
