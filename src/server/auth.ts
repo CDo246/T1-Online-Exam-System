@@ -38,10 +38,10 @@ declare module "next-auth" {
  */
 export const authOptions: NextAuthOptions = {
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
   },
   callbacks: {
-/*     async session({ session, user }) { 
+    /*     async session({ session, user }) { 
       console.log("\n\n\n Session Test")
       console.log(session)
       console.log(user)
@@ -55,15 +55,15 @@ export const authOptions: NextAuthOptions = {
       }
     }, */
 
-    async signIn(profile) {
+    signIn(profile) {
       //Handles signing in
       // https://next-auth.js.org/configuration/callbacks
 
-      console.log("\n\n\n signIn test")
-      console.log(profile)
-      const isAllowedToSignIn = true
-      if (isAllowedToSignIn) return true
-      else return false // Return false to display a default error message
+      console.log("\n\n\n signIn test");
+      console.log(profile);
+      const isAllowedToSignIn = true;
+      if (isAllowedToSignIn) return true;
+      else return false; // Return false to display a default error message
     },
   },
   adapter: PrismaAdapter(prisma),
@@ -78,15 +78,15 @@ export const authOptions: NextAuthOptions = {
           type: "text",
           placeholder: "name@example.com",
         },
-        password: { 
-          label: "Password", 
+        password: {
+          label: "Password",
           type: "password",
         },
       },
 
       async authorize(credentials, req) {
-        if(!credentials) return null
-        console.log(credentials)
+        if (!credentials) return null;
+        console.log(credentials);
         // Add logic here to look up the user from the credentials supplied
         const user = await prisma.user.findFirst({
           where: {
@@ -94,20 +94,27 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        if(user === null) throw new Error( JSON.stringify({ errors: "User Not Found", status: false }))
+        if (user === null)
+          throw new Error(
+            JSON.stringify({ errors: "User Not Found", status: false })
+          );
 
-        console.log(user.passwordSalt)
+        console.log(user.passwordSalt);
 
-        const password = createHash('sha256').update(`${user.passwordSalt}${credentials.password}`).digest('hex')
-        if(password === user.password) return user
-        throw new Error( JSON.stringify({ errors: "Incorrect Password", status: false }))
-        return null
+        const password = createHash("sha256")
+          .update(`${user.passwordSalt}${credentials.password}`)
+          .digest("hex");
+        if (password === user.password) return user;
+        throw new Error(
+          JSON.stringify({ errors: "Incorrect Password", status: false })
+        );
+        return null;
       },
     }),
   ],
   pages: {
     //signIn: "/",
-  }
+  },
 };
 
 /**

@@ -1,0 +1,33 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18.x'
+      - name: Install Yarn
+        run: npm install -g yarn
+      - run: yarn install
+      - run: |
+          export NEXTAUTH_SECRET=$(openssl rand -hex 64)
+          echo "NEXTAUTH_SECRET=$NEXTAUTH_SECRET" >> $GITHUB_ENV
+      - run: yarn build
+        env:
+          DATABASE_URL: "file:./db.sqlite"
+          NEXTAUTH_URL: "http://localhost:3000"
+          DISCORD_CLIENT_ID: ""
+          DISCORD_CLIENT_SECRET: ""
+      - run: yarn postinstall
+      - name: Check code formatting with Prettier
+        run: yarn prettier:check
+
+

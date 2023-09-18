@@ -7,6 +7,8 @@
     "dev": "next dev",
     "postinstall": "prisma generate",
     "lint": "next lint",
+    "prettier:format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "prettier:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "start": "next start"
   },
   "dependencies": {
