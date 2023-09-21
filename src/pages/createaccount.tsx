@@ -3,11 +3,19 @@ import { BlackBackButton, BlackButton } from "~/components/button";
 import { FormBox } from "~/components/boxes";
 import { CentredLayout } from "~/components/layouts";
 import { useState } from "react";
+import { InputField, Validation } from "~/components/input";
 
 export default function CreateAccount() {
   const [name, setName] = useState("");
+  const [nameValid, setNameValid] = useState(false)
   const [email, setEmail] = useState("");
+  const [emailValid, setEmailValid] = useState(false);
   const [password, setPassword] = useState("");
+  const [passwordValid, setPasswordValid] = useState(false);
+  const [createAccountDisabled, setCreateAccountDisabled] = useState(true)
+
+  let disable = !nameValid || !emailValid || !passwordValid
+  if(createAccountDisabled !== disable) setCreateAccountDisabled(disable)
 
   return (
     <CentredLayout title="Create Account">
@@ -16,30 +24,40 @@ export default function CreateAccount() {
           <BlackBackButton />
         </Link>
         <hr />
-        <input
-          className="rounded-xl border-2 border-black p-3"
+        <InputField
+          name="Name"
           type="text"
           placeholder="Name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
-        ></input>
-        <input
-          className="rounded-xl border-2 border-black p-3"
+          setValue={setName}
+          valid={nameValid}
+          setValid={setNameValid}
+          validation={Validation.NonEmpty}
+          />
+        <InputField
+          name="Email Address"
           type="text"
           placeholder="Email Address"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        ></input>
-        <input
-          className="rounded-xl border-2 border-black p-3"
+          setValue={setEmail}
+          valid={emailValid}
+          setValid={setEmailValid}
+          validation={Validation.Email}
+          />
+        <InputField
+          name="Password"
           type="password"
           placeholder="●●●●●●"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        ></input>
+          setValue={setPassword}
+          valid={passwordValid}
+          setValid={setPasswordValid}
+          validation={Validation.Password}
+          />
         <hr className="min-w-[35vw]" />
         <a
           onClick={() => {
+            if(createAccountDisabled) return
             fetch("/api/createaccount", {
               method: "POST",
               headers: {
@@ -53,7 +71,7 @@ export default function CreateAccount() {
             }).then((res) => console.log(res));
           }}
         >
-          <BlackButton text="Create Account" />
+          <BlackButton text="Create Account" disabled={createAccountDisabled} />
         </a>
       </FormBox>
     </CentredLayout>

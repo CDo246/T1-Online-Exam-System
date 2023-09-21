@@ -1,18 +1,29 @@
 interface ButtonText {
   text: string;
+  disabled?: boolean;
 }
 
-export function BlackButton({ text }: ButtonText) {
+export function BlackButton({ text, disabled }: ButtonText) {
+  let className = disabled ? 
+    "w-full rounded-xl border-2 border-gray-500 bg-gray-500 p-2 text-xl text-white" 
+    : 
+    "w-full rounded-xl border-2 border-black bg-black p-2 text-xl text-white"
+
   return (
-    <button className="w-full rounded-xl border-2 border-black bg-black p-2 text-xl text-white">
+    <button className={className}>
       {text}
     </button>
   );
 }
 
-export function WhiteButton({ text }: ButtonText) {
+export function WhiteButton({ text, disabled }: ButtonText) {
+  let className = disabled?
+    "w-full rounded-xl border-2 border-gray-500 p-2 text-xl"
+    :
+    "w-full rounded-xl border-2 border-black p-2 text-xl"
+
   return (
-    <button className="w-full rounded-xl border-2 border-black p-2 text-xl">
+    <button className={className}>
       {text}
     </button>
   );

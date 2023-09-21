@@ -13,7 +13,7 @@ import {
   signOut,
   useSession,
 } from "next-auth/react";
-import { InputField } from "~/components/input";
+import { InputField, Validation } from "~/components/input";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { useState } from "react";
 
@@ -23,8 +23,14 @@ export default function Home({
   const { data: session, status } = useSession();
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [emailValid, setEmailValid] = useState(false)
   const [password, setPassword] = useState("");
+  const [passwordValid, setPasswordValid] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [signInDisabled, setSignInDisabled] = useState(true)
+
+  let disable = !emailValid || !passwordValid
+  if(signInDisabled !== disable) setSignInDisabled(disable)
 
   return (
     <CentredLayout title="Exam Inviligation Website">
@@ -47,24 +53,30 @@ export default function Home({
           </div>
         )}
         <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-        <label>Email Address:</label>
         <InputField
-          name="email"
+          name="Email Address"
           type="text"
           placeholder="Email Address"
           value={email}
           setValue={setEmail}
+          valid={emailValid}
+          setValid={setEmailValid}
+          validation={Validation.Email}
         />
-        <label>Password:</label>
         <InputField
-          name="password"
+          name="Password"
           type="password"
           placeholder="●●●●●●"
           value={password}
           setValue={setPassword}
+          valid={passwordValid}
+          setValid={setPasswordValid}
+          validation={Validation.Password}
         />
         <a
-          onClick={() =>
+          
+          onClick={() => {
+            if(signInDisabled) return
             signIn("login", {
               email: email,
               password: password,
@@ -82,8 +94,9 @@ export default function Home({
               });
             })
           }
+          }
         >
-          <BlackButton text="Sign In" />
+          <BlackButton text="Sign In" disabled={signInDisabled}/>
         </a>
 
         <hr />
