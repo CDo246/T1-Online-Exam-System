@@ -86,7 +86,6 @@ export const authOptions: NextAuthOptions = {
 
       async authorize(credentials, req) {
         if (!credentials) return null;
-        console.log(credentials);
         // Add logic here to look up the user from the credentials supplied
         const user = await prisma.user.findFirst({
           where: {
@@ -98,8 +97,6 @@ export const authOptions: NextAuthOptions = {
           throw new Error(
             JSON.stringify({ errors: "User Not Found", status: false })
           );
-
-        console.log(user.passwordSalt);
 
         const password = createHash("sha256")
           .update(`${user.passwordSalt}${credentials.password}`)

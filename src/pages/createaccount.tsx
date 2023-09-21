@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BlackBackButton, BlackButton } from "~/components/button";
 import { FormBox } from "~/components/boxes";
 import { CentredLayout } from "~/components/layouts";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { InputField, Validation } from "~/components/input";
 import router from "next/router";
 
@@ -14,10 +14,17 @@ export default function CreateAccount() {
   const [emailValid, setEmailValid] = useState(false);
   const [password, setPassword] = useState("");
   const [passwordValid, setPasswordValid] = useState(false);
+  const [secondPassword, setSecondPassword] = useState("")
+  const [secondPasswordValid, setSecondPaswordValid] = useState(false)
   const [createAccountDisabled, setCreateAccountDisabled] = useState(true)
 
-  let disable = !nameValid || !emailValid || !passwordValid
+  let disable = !nameValid || !emailValid || !passwordValid || !secondPasswordValid
   if(createAccountDisabled !== disable) setCreateAccountDisabled(disable)
+
+  useEffect(() => {
+    if(password === secondPassword && passwordValid) setSecondPaswordValid(true)
+    else setSecondPaswordValid(false)
+  }, [password, secondPassword])
 
   return (
     <CentredLayout title="Create Account">
@@ -70,6 +77,16 @@ export default function CreateAccount() {
           setValid={setPasswordValid}
           validation={Validation.Password}
           />
+        <label>Confirm Password:</label> 
+        <input
+          className={`rounded-xl focus:outline-none border-2 ${secondPasswordValid ? "border-black" : "border-red-600"} p-3`}
+          name="secondPassword"
+          type="password"
+          placeholder="●●●●●●"
+          value={secondPassword}
+          onChange={(e) => setSecondPassword(e.target.value)}
+        />
+        {!secondPasswordValid && <p className="text-red-600">Passwords must be matching</p>}
         <hr className="min-w-[35vw]" />
         <a
           onClick={async () => {
