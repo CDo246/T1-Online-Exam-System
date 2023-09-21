@@ -90,7 +90,7 @@ export default function Home({
                 console.log(res);
                 if (res === null) return;
                 //Redirect upon successful login
-                router.push("/student/entersession"); //TODO: Update temp redirect home
+                router.push("/account");
               });
             })
           }
