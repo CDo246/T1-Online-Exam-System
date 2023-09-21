@@ -47,17 +47,18 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  password      String
-  passwordSalt  String
-  accounts      Account[]
-  sessions      Session[]
-  role          String // 'examiner', 'student', 'admin'
-  student       Student?
-  examiner      Examiner?
+  id               String    @id @default(cuid())
+  name             String?
+  email            String?   @unique
+  emailVerified    DateTime?
+  verificationCode String
+  password         String
+  passwordSalt     String
+  accounts         Account[]
+  sessions         Session[]
+  role             String // 'examiner', 'student', 'admin'
+  student          Student?
+  examiner         Examiner?
 }
 
 model VerificationToken {

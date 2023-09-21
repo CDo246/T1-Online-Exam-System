@@ -28,6 +28,7 @@ export default function handler(
         data: {
           name: name,
           email: email,
+          verificationCode: randomBytes(8).toString("hex"),
           password: hash,
           passwordSalt: salt,
           role: "Account",
