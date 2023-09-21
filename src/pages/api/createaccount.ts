@@ -4,7 +4,8 @@ import { createHash, randomBytes } from "crypto";
 import validator from "validator";
 
 type ResponseData = {
-  message: string;
+  message?: string;
+  error?: string;
 };
 
 export default function handler(
@@ -19,7 +20,7 @@ export default function handler(
 
   //Error 400 if the account creation fails for some reason
   if(name === "" || !validator.isEmail(email) || !validator.isStrongPassword(password)) {
-    res.status(400).json({ message: "Incorrect Details" });
+    res.status(200).json({ error: "Incorrect Details" });
   }
   else {
     console.log("Creating account")
@@ -40,7 +41,7 @@ export default function handler(
       })
       .catch(e => {
         console.log(e)
-        res.status(400).json({ message: "An Error Occured Creating Your Account. There is likely already an account with this email."});
+        res.status(200).json({ error: "An Error Occured Creating Your Account. There is likely already an account with this email."});
       })
   }
 }

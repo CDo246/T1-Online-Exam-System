@@ -4,7 +4,8 @@ import { createHash, randomBytes } from "crypto";
 import validator from "validator";
 
 type ResponseData = {
-  message: string;
+  error?: string;
+  message?: string;
 };
 
 export default async function handler(
@@ -20,10 +21,10 @@ export default async function handler(
   });
   console.log(user)
   if(user === null) {
-    res.status(400).json({ message: "User Not Found." });
+    res.status(200).json({ error: "User Not Found." });
   }
   else if(verificationCode !== user.verificationCode) {
-    res.status(400).json({message: "Incorrect Verification Code"})
+    res.status(200).json({error: "Incorrect Verification Code"})
   }
   else {
     prisma.user.update({

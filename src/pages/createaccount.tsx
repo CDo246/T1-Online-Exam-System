@@ -4,8 +4,10 @@ import { FormBox } from "~/components/boxes";
 import { CentredLayout } from "~/components/layouts";
 import { useState } from "react";
 import { InputField, Validation } from "~/components/input";
+import router from "next/router";
 
 export default function CreateAccount() {
+  const [createAccountError, setCreateAccountError] = useState<string | null>(null)
   const [name, setName] = useState("");
   const [nameValid, setNameValid] = useState(false)
   const [email, setEmail] = useState("");
@@ -24,6 +26,20 @@ export default function CreateAccount() {
           <BlackBackButton />
         </Link>
         <hr />
+        {createAccountError && (
+          <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-red-700">
+            <div />
+            <p className="text-white">
+              Error With Account Creation: ({createAccountError})
+            </p>
+            <a
+              className="px-2 text-right text-white"
+              onClick={() => setCreateAccountError(null)}
+            >
+              X
+            </a>
+          </div>
+        )}
         <InputField
           name="Name"
           type="text"
@@ -56,9 +72,9 @@ export default function CreateAccount() {
           />
         <hr className="min-w-[35vw]" />
         <a
-          onClick={() => {
+          onClick={async () => {
             if(createAccountDisabled) return
-            fetch("/api/createaccount", {
+            let response = await fetch("/api/createaccount", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -68,7 +84,10 @@ export default function CreateAccount() {
                 email: email,
                 password: password,
               }),
-            }).then((res) => console.log(res));
+            }).then(res => res.json())
+            console.log(response)
+            if(response.error === undefined) router.push("/"); //TODO: Create a 'verify your email' page, redirect to that instead
+            else setCreateAccountError(response?.error ?? null)
           }}
         >
           <BlackButton text="Create Account" disabled={createAccountDisabled} />
