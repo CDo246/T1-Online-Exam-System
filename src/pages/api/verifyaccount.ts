@@ -13,21 +13,27 @@ export default async function handler(
 ) {
   const {email, verificationCode} = req.body;
 
-  let user = await prisma.user.update({
+  let user = await prisma.user.findFirst({
     where: {
       email: email,
-      verificationCode: verificationCode,
     },
-    data: {
-        emailVerified: new Date()
-    }
   });
-
+  console.log(user)
   if(user === null) {
     res.status(400).json({ message: "User Not Found." });
-}
-else {
-
+  }
+  else if(verificationCode !== user.verificationCode) {
+    res.status(400).json({message: "Incorrect Verification Code"})
+  }
+  else {
+    prisma.user.update({
+      where: {
+        email: email,
+      },
+      data: {
+        emailVerified: new Date()
+      }
+    })
     res.status(200).json({ message: "Account Verified." });
   }
 
