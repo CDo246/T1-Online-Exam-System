@@ -1,7 +1,7 @@
 import { useState } from "react";
-import validator from "validator"
+import validator from "validator";
 
-export enum Validation{
+export enum Validation {
   None = "None",
   NonEmpty = "NonEmpty",
   Email = "Email",
@@ -16,22 +16,29 @@ interface InputConfig {
   setValue: React.Dispatch<React.SetStateAction<string>>; //TODO: Try fixing
   valid: boolean;
   setValid: React.Dispatch<React.SetStateAction<boolean>>;
-  validation: Validation
+  validation: Validation;
 }
 
 function checkValidity(value: string, validation: Validation): boolean {
-  if(validation === Validation.None) return true
-  else if(validation === Validation.NonEmpty && value !== "") return true
-  else if(validation === Validation.Email && validator.isEmail(value)) return true
-  else if(validation === Validation.Password && validator.isStrongPassword(value)) return true
-  return false
+  if (validation === Validation.None) return true;
+  else if (validation === Validation.NonEmpty && value !== "") return true;
+  else if (validation === Validation.Email && validator.isEmail(value))
+    return true;
+  else if (
+    validation === Validation.Password &&
+    validator.isStrongPassword(value)
+  )
+    return true;
+  return false;
 }
 
 function getInvalidReason(validation: Validation): string {
-  if(validation === Validation.NonEmpty) return "This field cannot be empty."
-  else if(validation === Validation.Email) return "This field must contain a valid email address."
-  else if(validation === Validation.Password) return "This field must contain a password at least 8 characters long, with 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol."
-  return "This error is in error."
+  if (validation === Validation.NonEmpty) return "This field cannot be empty.";
+  else if (validation === Validation.Email)
+    return "This field must contain a valid email address.";
+  else if (validation === Validation.Password)
+    return "This field must contain a password at least 8 characters long, with 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol.";
+  return "This error is in error.";
 }
 
 export function InputField({
@@ -42,17 +49,18 @@ export function InputField({
   setValue,
   valid,
   setValid,
-  validation
-  }: InputConfig) {
-  
-  const validity = checkValidity(value, validation)
-  if(validity !== valid) setValid(validity)
+  validation,
+}: InputConfig) {
+  const validity = checkValidity(value, validation);
+  if (validity !== valid) setValid(validity);
 
   return (
-    <>   
-      <label>{name}:</label> 
+    <>
+      <label>{name}:</label>
       <input
-        className={`rounded-xl focus:outline-none border-2 ${valid ? "border-black" : "border-red-600"} p-3`}
+        className={`rounded-xl border-2 focus:outline-none ${
+          valid ? "border-black" : "border-red-600"
+        } p-3`}
         name={name}
         type={type}
         placeholder={placeholder}

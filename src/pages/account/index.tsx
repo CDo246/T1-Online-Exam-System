@@ -5,7 +5,9 @@ import { CentredLayout } from "~/components/layouts";
 import { getCsrfToken, signOut, useSession } from "next-auth/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 
-export default function Account({  csrfToken, }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Account({
+  csrfToken,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { data: session, status } = useSession();
   return (
     <CentredLayout title="Create Account">

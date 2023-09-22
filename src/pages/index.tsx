@@ -23,14 +23,14 @@ export default function Home({
   const { data: session, status } = useSession();
   const router = useRouter();
   const [email, setEmail] = useState("");
-  const [emailValid, setEmailValid] = useState(false)
+  const [emailValid, setEmailValid] = useState(false);
   const [password, setPassword] = useState("");
-  const [passwordValid, setPasswordValid] = useState(false)
+  const [passwordValid, setPasswordValid] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [signInDisabled, setSignInDisabled] = useState(true)
+  const [signInDisabled, setSignInDisabled] = useState(true);
 
-  const disable = !emailValid || !passwordValid
-  if(signInDisabled !== disable) setSignInDisabled(disable)
+  const disable = !emailValid || !passwordValid;
+  if (signInDisabled !== disable) setSignInDisabled(disable);
 
   return (
     <CentredLayout title="Exam Inviligation Website">
@@ -74,9 +74,8 @@ export default function Home({
           validation={Validation.Password}
         />
         <a
-          
           onClick={() => {
-            if(signInDisabled) return
+            if (signInDisabled) return;
             signIn("login", {
               email: email,
               password: password,
@@ -92,11 +91,10 @@ export default function Home({
                 //Redirect upon successful login
                 router.push("/account");
               });
-            })
-          }
-          }
+            });
+          }}
         >
-          <BlackButton text="Sign In" disabled={signInDisabled}/>
+          <BlackButton text="Sign In" disabled={signInDisabled} />
         </a>
 
         <hr />

@@ -12,31 +12,27 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  const {email, verificationCode} = req.body;
+  const { email, verificationCode } = req.body;
 
   const user = await prisma.user.findFirst({
     where: {
       email: email,
     },
   });
-  console.log(user)
-  if(user === null) {
+  console.log(user);
+  if (user === null) {
     res.status(200).json({ error: "User Not Found." });
-  }
-  else if(verificationCode !== user.verificationCode) {
-    res.status(200).json({error: "Incorrect Verification Code"})
-  }
-  else {
+  } else if (verificationCode !== user.verificationCode) {
+    res.status(200).json({ error: "Incorrect Verification Code" });
+  } else {
     prisma.user.update({
       where: {
         email: email,
       },
       data: {
-        emailVerified: new Date()
-      }
-    })
+        emailVerified: new Date(),
+      },
+    });
     res.status(200).json({ message: "Account Verified." });
   }
-
 }
-

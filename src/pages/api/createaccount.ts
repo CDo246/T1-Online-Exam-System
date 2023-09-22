@@ -19,11 +19,14 @@ export default function handler(
   //Validate password
 
   //Error 400 if the account creation fails for some reason
-  if(name === "" || !validator.isEmail(email) || !validator.isStrongPassword(password)) {
+  if (
+    name === "" ||
+    !validator.isEmail(email) ||
+    !validator.isStrongPassword(password)
+  ) {
     res.status(200).json({ error: "Incorrect Details" });
-  }
-  else {
-    console.log("Creating account")
+  } else {
+    console.log("Creating account");
     prisma.user
       .create({
         data: {
@@ -35,14 +38,18 @@ export default function handler(
           role: "Account",
         },
       })
-      .then(result => {
-        console.log(result)
+      .then((result) => {
+        console.log(result);
         res.status(200).json({ message: "Account Created." });
       })
-      .catch(e => {
-        console.log(e)
-        res.status(200).json({ error: "An Error Occured Creating Your Account. There is likely already an account with this email."});
-      })
+      .catch((e) => {
+        console.log(e);
+        res
+          .status(200)
+          .json({
+            error:
+              "An Error Occured Creating Your Account. There is likely already an account with this email.",
+          });
+      });
   }
 }
-
