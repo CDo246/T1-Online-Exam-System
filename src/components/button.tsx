@@ -4,7 +4,7 @@ interface ButtonText {
 }
 
 export function BlackButton({ text, disabled }: ButtonText) {
-  let className = disabled ? 
+  const className = disabled ? 
     "w-full rounded-xl border-2 border-gray-500 bg-gray-500 p-2 text-xl text-white" 
     : 
     "w-full rounded-xl border-2 border-black bg-black p-2 text-xl text-white"
@@ -17,7 +17,7 @@ export function BlackButton({ text, disabled }: ButtonText) {
 }
 
 export function WhiteButton({ text, disabled }: ButtonText) {
-  let className = disabled?
+  const className = disabled?
     "w-full rounded-xl border-2 border-gray-500 p-2 text-xl"
     :
     "w-full rounded-xl border-2 border-black p-2 text-xl"
