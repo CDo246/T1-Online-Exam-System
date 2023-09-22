@@ -3,6 +3,8 @@ import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
 import CloudVision from "./CloudVision";
 import { type } from "os";
+import { BlackBackButton, BlackButton } from "~/components/button";
+import { gcs } from 'gcs';
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -31,6 +33,7 @@ const Camera = (): JSX.Element => {
   );
 
   const handleStartCaptureClick = () => {
+    console.log("EGEWGE");
     navigator.mediaDevices
       .getUserMedia({
         video: { deviceId: { exact: selectedDevice?.deviceId } },
@@ -71,19 +74,19 @@ const Camera = (): JSX.Element => {
   }, [mediaRecorderRef, selectedDevice, setCapturing]);
 
   const handleDownload = React.useCallback(() => {
-    if (recordedChunks.length) {
-      const blob = new Blob(recordedChunks, {
-        type: "video/webm",
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      document.body.appendChild(a);
-      a.href = url;
-      a.download = "react-webcam-stream-capture.webm";
-      a.click();
-      window.URL.revokeObjectURL(url);
-      setRecordedChunks([]);
-    }
+    // if (recordedChunks.length) {
+    //   const blob = new Blob(recordedChunks, {
+    //     type: "video/webm",
+    //   });
+    //   const url = URL.createObjectURL(blob);
+    //   const a = document.createElement("a");
+    //   document.body.appendChild(a);
+    //   a.href = url;
+    //   a.download = "react-webcam-stream-capture.webm";
+    //   a.click();
+    //   window.URL.revokeObjectURL(url);
+    //   setRecordedChunks([]);
+    // }
   }, [recordedChunks]);
 
   let labels;
@@ -103,9 +106,76 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
-  React.useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then(handleDevices);
-  }, [handleDevices]);
+  // React.useEffect(() => {
+  //   const intervalId = setInterval(() => {
+  //     handleAnalyse();
+  //   }, 5000);
+
+  //   return () => {
+  //     clearInterval(intervalId);
+  //   };
+  // }, [handleAnalyse]); 
+  
+  //const { Storage } = require('@google-cloud/storage');
+  //const storage = window.gcs.GoogleCloud
+  const bucketName = "online-exam-system-videostorage";
+  // const apiKey = '';
+  // const storage = new Storage({
+  //   projectId: 'hidden-outrider-398205',
+  //   credentials: require(apiKey)
+  // });
+  // const handleCompleteSession = React.useCallback(async () => {
+  //   mediaRecorderRef.current?.stop();
+  //   setCapturing(false);
+  //   if(recordedChunks.length){
+  //     const blob = new Blob(recordedChunks, {
+  //       type: "video/webm",
+  //     });
+  //     const fileBuffer = Buffer.from(await blob.arrayBuffer());
+      
+  //     const date = new Date();
+  //     const currentTime = date.getHours() + date.getMinutes() + date.getSeconds() + date.getDay() + date.getMonth();
+  //     storage.bucket(bucketName).file(currentTime.toString()).createWriteStream({
+  //       metadata: {
+  //         contentType: "video/webm",
+  //       },
+  //     }).on('error', function(err) {
+  //       console.log(err);
+  //     }).on('finish', function() {
+  //       console.log('File uploaded successfully.');
+  //     }).end(fileBuffer);
+  //   }
+  // }, [mediaRecorderRef, selectedDevice, setCapturing, recordedChunks])
+
+  // React.useEffect(() => {
+  //   navigator.mediaDevices.enumerateDevices().then(handleDevices);
+  // }, [handleDevices]);
+
+  const handleTestUpload = React.useCallback(async () => {
+    console.log("OEUFO");
+    mediaRecorderRef.current?.stop();
+    setCapturing(false);
+    console.log("FIRST");
+    if(recordedChunks.length){
+      const blob = new Blob(recordedChunks, {
+        type: "video/mp4",
+      });
+      const formData = new FormData();
+    formData.append('video/mp4', blob);
+    
+
+    
+      fetch("/api/uploadvideo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "video/mp4",  
+        },
+        body: formData,
+      }).then((res) => console.log(res));
+    alert("success");
+
+    }
+  }, [mediaRecorderRef, selectedDevice, setCapturing, recordedChunks])
 
   return (
     <div>
@@ -115,7 +185,11 @@ const Camera = (): JSX.Element => {
         ref={cameraRef}
       />
       {capturing ? (
-        <button onClick={handleStopCaptureClick}> Stop Capture</button>
+        <div>
+          <button onClick={handleStopCaptureClick}> Stop Capture</button>
+          <button onClick={handleTestUpload}>TestUpload</button>
+        </div>
+        
       ) : (
         <div>
           <Dropdown list={devices} handler={handleDropdown} />
