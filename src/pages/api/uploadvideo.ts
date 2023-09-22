@@ -65,18 +65,18 @@ type ResponseData = {
   //const blob = new Blob(video, {type: "video/mp4",});
   //const blob2 = video.get("video/mp4");
 
-  const url = URL.createObjectURL(video);
-    const a = document.createElement("a");
-    document.body.appendChild(a);
-    a.href = url;
-    a.download = "webcamvideo.mp4";
-    a.click();
-    window.URL.revokeObjectURL(url);
+  // const url = URL.createObjectURL(video);
+  //   const a = document.createElement("a");
+  //   document.body.appendChild(a);
+  //   a.href = url;
+  //   a.download = "webcamvideo.mp4";
+  //   a.click();
+  //   window.URL.revokeObjectURL(url);
 
-    return;
+    //return;
   
   
-  file.save(blob, function(err:any) {
+  file.save(video, function(err:any) {
     if (!err) {
       // File written successfully.
       console.log("SUCCESS");
@@ -86,7 +86,7 @@ type ResponseData = {
   //-
   // If the callback is omitted, we'll return a Promise.
   //-
-  file.save(blob).then(function() {});
+  file.save(video).then(function() {});
     
   
     console.log("THE VIDEO SIZE IS " + video.length);

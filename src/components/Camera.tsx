@@ -163,8 +163,6 @@ const Camera = (): JSX.Element => {
       const formData = new FormData();
     formData.append('video/mp4', blob);
     
-
-    
       fetch("/api/uploadvideo", {
         method: "POST",
         headers: {
