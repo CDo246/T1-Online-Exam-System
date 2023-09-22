@@ -18,7 +18,7 @@ export default function CreateAccount() {
   const [secondPasswordValid, setSecondPaswordValid] = useState(false)
   const [createAccountDisabled, setCreateAccountDisabled] = useState(true)
 
-  let disable = !nameValid || !emailValid || !passwordValid || !secondPasswordValid
+  const disable = !nameValid || !emailValid || !passwordValid || !secondPasswordValid
   if(createAccountDisabled !== disable) setCreateAccountDisabled(disable)
 
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function CreateAccount() {
         <a
           onClick={async () => {
             if(createAccountDisabled) return
-            let response = await fetch("/api/createaccount", {
+            const response = await fetch("/api/createaccount", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

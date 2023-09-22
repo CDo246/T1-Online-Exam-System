@@ -14,8 +14,8 @@ export default function Reset() {
     return(
         <CentredLayout title="Account Validation">
             <FormBox>
-                <p>This page isn't fully-functional yet.</p>
-                <p>Your email address is "{router.query.email}"</p>
+                <p>This page is not fully-functional yet.</p>
+                <p>Your email address is: {router.query.email}</p>
                 <InputField
                     name="Password"
                     type="password"

@@ -14,7 +14,7 @@ export default async function handler(
 ) {
   const {email, verificationCode} = req.body;
 
-  let user = await prisma.user.findFirst({
+  const user = await prisma.user.findFirst({
     where: {
       email: email,
     },

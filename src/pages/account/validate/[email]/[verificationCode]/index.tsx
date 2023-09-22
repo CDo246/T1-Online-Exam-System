@@ -9,7 +9,7 @@ export default function Validation() {
     return(
         <CentredLayout title="Account Validation">
             <FormBox>
-                <p>Your email address is "{router.query.email}"</p>
+                <p>Your email address is: {router.query.email}</p>
                 <p>Click the button to validate your account:</p>
                 <a onClick={() => {
                     fetch("/api/verifyaccount", {

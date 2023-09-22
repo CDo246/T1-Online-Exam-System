@@ -29,7 +29,7 @@ export default function Home({
   const [loginError, setLoginError] = useState<string | null>(null);
   const [signInDisabled, setSignInDisabled] = useState(true)
 
-  let disable = !emailValid || !passwordValid
+  const disable = !emailValid || !passwordValid
   if(signInDisabled !== disable) setSignInDisabled(disable)
 
   return (

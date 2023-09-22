@@ -45,7 +45,7 @@ export function InputField({
   validation
   }: InputConfig) {
   
-  let validity = checkValidity(value, validation)
+  const validity = checkValidity(value, validation)
   if(validity !== valid) setValid(validity)
 
   return (
