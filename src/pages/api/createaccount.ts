@@ -44,12 +44,10 @@ export default function handler(
       })
       .catch((e) => {
         console.log(e);
-        res
-          .status(200)
-          .json({
-            error:
-              "An Error Occured Creating Your Account. There is likely already an account with this email.",
-          });
+        res.status(200).json({
+          error:
+            "An Error Occured Creating Your Account. There is likely already an account with this email.",
+        });
       });
   }
 }
