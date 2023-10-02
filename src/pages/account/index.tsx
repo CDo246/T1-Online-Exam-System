@@ -5,7 +5,7 @@ import { CentredLayout } from "~/components/layouts";
 import { getCsrfToken, signOut, useSession } from "next-auth/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 
-export default function EnterSession({
+export default function Account({
   csrfToken,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { data: session, status } = useSession();
@@ -16,15 +16,13 @@ export default function EnterSession({
           <BlackBackButton />
         </Link>
         <hr />
-        <input
-          className="rounded-xl border-2 border-black p-3"
-          type="text"
-          placeholder="Session Code"
-        ></input>
-        <hr />
-        <Link href="/student/session">
-          <BlackButton text="Enter Session" />
-        </Link>
+        <p>Account Stuff</p>
+        {session && (
+          <div>
+            Signed in as {session.user.email ?? "placeholder"} <br />
+            <button onClick={() => signOut()}>Sign out</button>
+          </div>
+        )}
       </FormBox>
     </CentredLayout>
   );
