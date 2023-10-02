@@ -28,17 +28,18 @@ export const studentRouter = createTRPCRouter({
       });
 
       if (!student) {
-        throw new Error(`Student with id ${input.userId} not found (this should never be thrown)`);
+        throw new Error(
+          `Student with id ${input.userId} not found (this should never be thrown)`
+        );
       }
 
       return {
         id: user.id,
         name: user.name,
         email: user.email,
-        studentId: student.studentId
+        studentId: student.studentId,
       };
     }),
-
 
   // Gets all examSessions for a student (past and current)
   // Once the sessionID's are known, we can post further queries to get any recordings related to those sessions.
@@ -111,28 +112,30 @@ export const studentRouter = createTRPCRouter({
     }),
 
   createNotification: publicProcedure
-  .input(z.object({ sessionId: z.number() }))
-  .query(async ({ input, ctx }) => {
-    const session = await ctx.prisma.examSession.findUnique({
-      where: {
-        sessionId: input.sessionId,
-      },
-    });
+    .input(z.object({ sessionId: z.number() }))
+    .query(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
 
-    if (!session) {
-      throw new Error(`Session with id ${input.sessionId} not found`);
-    }
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
 
-    const student = await studentRouter.createCaller(ctx).getStudentDetails({ userId: String(session.studentId)})
+      const student = await studentRouter
+        .createCaller(ctx)
+        .getStudentDetails({ userId: String(session.studentId) });
 
-    // Create new notification relating to session
-    const notification = await ctx.prisma.notification.create({
-      data: {
-        content: `[Suspicious activity flagged] SID: ${session.studentId} Name: ${student.name}`,
-        sessionId: session.sessionId
-      },
-    });
-  }),
+      // Create new notification relating to session
+      const notification = await ctx.prisma.notification.create({
+        data: {
+          content: `[Suspicious activity flagged] SID: ${session.studentId} Name: ${student.name}`,
+          sessionId: session.sessionId,
+        },
+      });
+    }),
 
   // Flag the session if suspicious activity has been found
   // Create a notification relating to the session, store in DB
@@ -160,12 +163,11 @@ export const studentRouter = createTRPCRouter({
       });
 
       // Create new notification
-      await studentRouter.createCaller(ctx).createNotification({ sessionId: session.sessionId})
+      await studentRouter
+        .createCaller(ctx)
+        .createNotification({ sessionId: session.sessionId });
 
       // Ideally, we want the notifications to act like real-time events, so we will need to implement a design pattern with the teacher/admin API to check for any newly created
       // notifications associated to any sessions they are overwatching.
     }),
-  
-  
-
 });
