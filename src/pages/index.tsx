@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "~/utils/api";
 import { BlackButton, WhiteButton } from "~/components/button";
 import { CentredLayout } from "~/components/layouts";
@@ -29,15 +29,26 @@ export default function Home({
   const [loginError, setLoginError] = useState<string | null>(null);
   const [signInDisabled, setSignInDisabled] = useState(true);
 
+  const accountCreated = useSearchParams().get("created");
   const disable = !emailValid || !passwordValid;
   if (signInDisabled !== disable) setSignInDisabled(disable);
-
+  
   return (
     <CentredLayout title="Exam Inviligation Website">
       <p className="text-center text-5xl text-white">
         Exam Inviligation System
       </p>
       <FormBox>
+        {
+          accountCreated !== null && (
+            <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-green-700">
+              <div />
+              <p className="text-white">
+                Your account with the email address {accountCreated} has been created!
+              </p>
+            </div>
+          )
+        }
         {loginError && (
           <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-red-700">
             <div />
