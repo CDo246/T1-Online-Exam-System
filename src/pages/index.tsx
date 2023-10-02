@@ -46,6 +46,9 @@ export default function Home({
               <p className="text-white">
                 Your account with the email address {accountCreated} has been created!
               </p>
+              <Link href="/">
+                <p className="px-2 text-right text-white">X</p>
+              </Link>
             </div>
           )
         }
