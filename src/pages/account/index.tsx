@@ -6,7 +6,6 @@ import { getCsrfToken, signOut, useSession } from "next-auth/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { redirect } from "next/dist/server/api-utils";
 import router from "next/router"
-import { AppRouter, appRouter } from "~/server/api/root";
 
 export default function Account({
   csrfToken,
@@ -16,8 +15,7 @@ export default function Account({
     onUnauthenticated() {router.push('/')}
     }
   );
-  {appRouter.students.createNotification}
-  console.log(session)
+
   return (
     <CentredLayout title="Create Account">
       <FormBox>

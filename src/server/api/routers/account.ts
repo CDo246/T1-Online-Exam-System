@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -6,29 +7,39 @@ import {
 } from "~/server/api/trpc";
 
 export const accountRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
 
-    updatePassword: protectedProcedure
+    updatePassword: publicProcedure
     .input(z.object({
         email: z.string(),
         oldPass: z.string(),
-        newPass: z.string()
+        newPass: z.string(),
     }))
-    .query(({input}) => {
-        console.log(`${input.newPass}`)
+    .output(z.boolean())
+    .mutation(async ({input, ctx}) => {
+        console.log(input.email)
+        const user = await ctx.prisma.user.findFirst({
+            where: {
+                email: input.email,
+            }
+        })
+        if(user === null) return false;
+
+        const savedPass = createHash("sha256")
+            .update(`${user.passwordSalt}${input.oldPass}`)
+            .digest("hex");
+        if(savedPass !== user.password) return false;
+        const newPass = createHash("sha256")
+            .update(`${user.passwordSalt}${input.newPass}`)
+            .digest("hex");
+
+        const res = await ctx.prisma.user.update({
+            where: {
+                email: input.email,
+            },
+            data: {
+                password: newPass
+            }
+        })
+        return true;
     }),
-
-  getAll: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.user.findMany();
-  }),
-
-  getSecretMessage: protectedProcedure.query(() => {
-    return "you can now see this secret message!";
-  }),
 });
