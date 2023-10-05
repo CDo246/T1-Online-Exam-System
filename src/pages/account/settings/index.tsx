@@ -1,7 +1,18 @@
+import Link from "next/link";
+import { FormBox } from "~/components/boxes";
+import { BlackBackButton, BlackButton } from "~/components/button";
+import { CentredLayout } from "~/components/layouts";
+
 export default function Settings() {
     return (
-      <div>
-        <p>Placeholder!</p>
-      </div>
+      <CentredLayout title="Create Account">
+        <FormBox>
+          <Link href="/account">
+            <BlackBackButton />
+          </Link>
+          <hr />
+
+        </FormBox>
+      </CentredLayout>
     );
   }

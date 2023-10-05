@@ -6,6 +6,7 @@ import { getCsrfToken, signOut, useSession } from "next-auth/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { redirect } from "next/dist/server/api-utils";
 import router from "next/router"
+import { AppRouter, appRouter } from "~/server/api/root";
 
 export default function Account({
   csrfToken,
@@ -15,18 +16,18 @@ export default function Account({
     onUnauthenticated() {router.push('/')}
     }
   );
+  {appRouter.students.createNotification}
   console.log(session)
   return (
     <CentredLayout title="Create Account">
       <FormBox>
-        <div className="grid grid-flow-col grid-cols-[1fr,1fr,5fr,1fr,1fr] gap-1 overflow-x-auto">
-          <div/>
-          <div/>
+        <div className="grid grid-flow-col grid-cols-[1fr,auto,auto] gap-1 overflow-x-auto">
+
           <p className="text-center text-xl flex-1 align-center">Welcome, {session?.user.name ?? ""}</p>
-          <Link href="/account/settings">
+          <Link href="/account/settings" className="h-full">
             <BlackButton text="Account Settings"/>
           </Link>
-          <a onClick={() => {signOut(); router.push('/');}}>
+          <a onClick={() => {signOut(); router.push('/');}} className="h-full">
             <BlackButton text="Log Out"/>
           </a>
         </div>
