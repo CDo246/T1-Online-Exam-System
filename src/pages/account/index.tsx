@@ -6,6 +6,8 @@ import { getCsrfToken, signOut, useSession } from "next-auth/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { redirect } from "next/dist/server/api-utils";
 import router from "next/router";
+import { useRouter } from "next/router";
+import { api } from "../../utils/api";
 
 export default function Account({
   csrfToken,
@@ -17,6 +19,9 @@ export default function Account({
     },
   });
 
+  const getRole = api.users.getUserRole.useQuery({
+    userEmail: session?.user.email || "",
+  });
   return (
     <CentredLayout title="Create Account">
       <FormBox>
@@ -45,6 +50,9 @@ export default function Account({
         {session && (
           <div>
             <p>Signed in as {session.user.email ?? ""}</p>
+            Signed in as {session.user.email ?? "placeholder"} <br />
+            Role: {getRole.data?.role} <br />
+            <button onClick={() => signOut()}>Sign out</button>
           </div>
         )}
       </FormBox>

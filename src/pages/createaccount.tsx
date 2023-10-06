@@ -3,7 +3,7 @@ import { BlackBackButton, BlackButton } from "~/components/button";
 import { FormBox } from "~/components/boxes";
 import { CentredLayout } from "~/components/layouts";
 import { useEffect, useState } from "react";
-import { InputField, Validation } from "~/components/input";
+import { InputField, DropdownField, Validation } from "~/components/input";
 import router from "next/router";
 
 export default function CreateAccount() {
@@ -12,6 +12,8 @@ export default function CreateAccount() {
   );
   const [name, setName] = useState("");
   const [nameValid, setNameValid] = useState(false);
+  const [role, setRole] = useState("");
+  const [roleValid, setRoleValid] = useState(false);
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState(false);
   const [password, setPassword] = useState("");
@@ -71,6 +73,12 @@ export default function CreateAccount() {
           setValid={setEmailValid}
           validation={Validation.Email}
         />
+        <DropdownField
+          name="Role"
+          value={role}
+          setValue={setRole}
+          valid={roleValid}
+        />
         <InputField
           name="Password"
           type="password"
@@ -108,6 +116,7 @@ export default function CreateAccount() {
                 name: name,
                 email: email,
                 password: password,
+                role: role,
               }),
             }).then((res) => res.json());
             console.log(response);
