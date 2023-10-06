@@ -6,9 +6,7 @@ import { CentredLayout } from "~/components/layouts";
 export default function Monitor() {
   return (
     <CentredLayout title="Create Account">
-      <FormBox>
-
-      </FormBox>
+      <FormBox></FormBox>
     </CentredLayout>
   );
 }

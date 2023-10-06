@@ -32,7 +32,7 @@ export default function Home({
   const accountCreated = useSearchParams().get("created");
   const disable = !emailValid || !passwordValid;
   if (signInDisabled !== disable) setSignInDisabled(disable);
-  
+
   const enterForm = () => {
     if (signInDisabled) return;
     signIn("login", {
@@ -51,27 +51,32 @@ export default function Home({
         router.push("/account");
       });
     });
-  }
-  
+  };
+
   return (
     <CentredLayout title="Exam Inviligation Website">
       <p className="text-center text-5xl text-white">
         Exam Inviligation System
       </p>
-      <form onSubmit={e => {e.preventDefault(); enterForm();}}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          enterForm();
+        }}
+      >
         <FormBox>
           {accountCreated !== null && (
-              <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-green-700">
-                <div />
-                <p className="text-white">
-                  Your account with the email address {accountCreated} has been created!
-                </p>
-                <Link href="/">
-                  <p className="px-2 text-right text-white">X</p>
-                </Link>
-              </div>
-            )
-          }
+            <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-green-700">
+              <div />
+              <p className="text-white">
+                Your account with the email address {accountCreated} has been
+                created!
+              </p>
+              <Link href="/">
+                <p className="px-2 text-right text-white">X</p>
+              </Link>
+            </div>
+          )}
           {loginError && (
             <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-red-700">
               <div />
@@ -107,9 +112,7 @@ export default function Home({
             setValid={setPasswordValid}
             validation={Validation.Password}
           />
-          <a
-            onClick={() => enterForm()}
-          >
+          <a onClick={() => enterForm()}>
             <BlackButton text="Sign In" disabled={signInDisabled} />
           </a>
 
