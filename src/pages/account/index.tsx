@@ -12,7 +12,7 @@ export default function Account({
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   const { data: session, status } = useSession();
   const getRole = api.users.getUserRole.useQuery({
-    userEmail: session?.user.email || "",
+    userEmail: session?.user.email ?? "",
   });
   return (
     <CentredLayout title="Create Account">
