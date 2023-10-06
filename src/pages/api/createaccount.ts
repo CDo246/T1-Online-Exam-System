@@ -8,11 +8,13 @@ type ResponseData = {
   error?: string;
 };
 
+const validRoles = ["Student", "Examiner", "Admin"];
+
 export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   const salt = randomBytes(8).toString("hex");
   const hash = createHash("sha256").update(`${salt}${password}`).digest("hex");
   console.log(hash);
@@ -22,7 +24,8 @@ export default function handler(
   if (
     name === "" ||
     !validator.isEmail(email) ||
-    !validator.isStrongPassword(password)
+    !validator.isStrongPassword(password) ||
+    !validRoles.includes(role)
   ) {
     res.status(200).json({ error: "Incorrect Details" });
   } else {
@@ -35,7 +38,7 @@ export default function handler(
           verificationCode: randomBytes(8).toString("hex"),
           password: hash,
           passwordSalt: salt,
-          role: "Account",
+          role: role,
         },
       })
       .then((result) => {
