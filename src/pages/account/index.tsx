@@ -20,7 +20,7 @@ export default function Account({
   });
 
   const getRole = api.users.getUserRole.useQuery({
-    userEmail: session?.user.email || "",
+    userEmail: session?.user.email ?? "",
   });
   return (
     <CentredLayout title="Create Account">
