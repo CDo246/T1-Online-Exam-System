@@ -6,7 +6,9 @@ import axios from "axios";
 type ResponseData = {
   message: string;
   };
-
+interface ExtendedNextApiRequest extends NextApiRequest {
+  body: FormData
+}
   // type Fields = {
   //   [fieldName: string]: string | string[];
   // };
@@ -43,7 +45,7 @@ type ResponseData = {
   // });
   
   export default async function handler(
-    req: NextApiRequest,
+    req: ExtendedNextApiRequest,
     res: NextApiResponse<ResponseData>
   ) {
     console.log("IT WORKS");
@@ -52,13 +54,11 @@ type ResponseData = {
     // const videoFile = fData.files.video as any;
     // const tempVideoPath = videoFile.path;
     // const video = await fs.readFile(tempVideoPath);
+    console.log("Printing req.body", req);
     const video = req.body.get("video/mp4");
     const { Storage } = require('@google-cloud/storage');
     const bucketName = "online-exam-system-videostorage";
     //const apiKey = '';
-    const date = new Date();
-      const currentTime = date.getHours().toString() + date.getMinutes().toString() 
-      + date.getSeconds().toString() + date.getDay().toString() + date.getMonth().toString();
   const storage = new Storage();
   const file = storage.bucket(bucketName).file("video.mp4");
 

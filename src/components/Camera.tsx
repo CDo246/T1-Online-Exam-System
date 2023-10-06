@@ -152,10 +152,7 @@ const Camera = (): JSX.Element => {
   // }, [handleDevices]);
 
   const handleTestUpload = React.useCallback(async () => {
-    console.log("OEUFO");
-    mediaRecorderRef.current?.stop();
-    setCapturing(false);
-    console.log("FIRST");
+    console.log(recordedChunks.length);
     if(recordedChunks.length){
       const blob = new Blob(recordedChunks, {
         type: "video/mp4",
@@ -185,7 +182,6 @@ const Camera = (): JSX.Element => {
       {capturing ? (
         <div>
           <button onClick={handleStopCaptureClick}> Stop Capture</button>
-          <button onClick={handleTestUpload}>TestUpload</button>
         </div>
         
       ) : (
@@ -196,6 +192,10 @@ const Camera = (): JSX.Element => {
       )}
       {recordedChunks.length > 0 && (
         <button onClick={handleDownload}>Download</button>
+      )}
+
+      {recordedChunks.length > 0 && (
+        <button onClick={handleTestUpload}>TestUpload</button>
       )}
 
       <button onClick={handleAnalyse}>Analyse image</button>
