@@ -156,13 +156,14 @@ const Camera = (): JSX.Element => {
     setCapturing(false);
     if(recordedChunks.length){
       const blob = new Blob(recordedChunks, {
-        type: "video/mp4",
+        type: "video/webm",
       });
       const formData = new FormData();
-      formData.append('video', blob, 'video.mp4');
+      formData.append('video', blob, 'video.webm');
     
       await fetch("/api/uploadvideo", {
         method: "POST",
+        headers: {     'Content-Type': 'multipart/form-data'   },
         body: formData,
       }).then((res) => console.log(res));
     alert("success");

@@ -16,40 +16,42 @@ type ResponseData = {
     req: NextApiRequest,
     res: NextApiResponse<ResponseData>
   ) {
-    const data = await new Promise((resolve, reject) => {
-      try{
-        const form = new formidable.IncomingForm();
-        console.log("Incoming Form done");
-        form.uploadDir = "./";
-        form.keepExtensions = true;
-        form.parse(req, async (err: any, fields: any, files: any) =>{
-          if (err) {
-          console.error("Error parsing form data:", err);
-          return res.status(500).json({ message: "Internal Server Error" });
-        }
-        })
-      }
-      catch (error : any){
+    console.log("BODY TYPE IS");
+    console.log(typeof req.body);
+    // const data = await new Promise((resolve, reject) => {
+    //   try{
+    //     const form = new formidable.IncomingForm();
+    //     console.log("Incoming Form done");
+    //     form.uploadDir = "./";
+    //     form.keepExtensions = true;
+    //     form.parse(req, async (err: any, fields: any, files: any) =>{
+    //       if (err) {
+    //       console.error("Error parsing form data:", err);
+    //       return res.status(500).json({ message: "Internal Server Error" });
+    //     }
+    //     })
+    //   }
+    //   catch (error : any){
   
-      }
-    })
-    console.log("TEST");
-    if(req.body.files.video){
-      const bucketName = "online-exam-system-videostorage";
-      const storage = new Storage();
-      const file = storage.bucket(bucketName).file("video.mp4");
-      file.save(req.body.files.video, function(err:any) {
-        if (!err) {
-          // File written successfully.
-          console.log("SUCCESS");
-        }
-      });
+    //   }
+    // })
+    // console.log("TEST");
+    // if(req.body.files.video){
+    //   const bucketName = "online-exam-system-videostorage";
+    //   const storage = new Storage();
+    //   const file = storage.bucket(bucketName).file("video.mp4");
+    //   file.save(req.body.files.video, function(err:any) {
+    //     if (!err) {
+    //       // File written successfully.
+    //       console.log("SUCCESS");
+    //     }
+    //   });
       
-      //-
-      // If the callback is omitted, we'll return a Promise.
-      //-
-      file.save(req.body.files.video).then(function() {});
-    }
+    //   //-
+    //   // If the callback is omitted, we'll return a Promise.
+    //   //-
+    //   file.save(req.body.files.video).then(function() {});
+    // }
     
     
     
@@ -61,16 +63,17 @@ type ResponseData = {
     //   }
     //   res.status(200).json({ message: "SUCCESS" });
       
-      
+  //   const bucketName = "online-exam-system-videostorage";
+  //   const filePath = "C:\\Users\\User\\Downloads\\react-webcam-stream-capture.webm";
+  //   const destFileName = 'your-new-file-name';
+  //   const storage = new Storage();
 
-    // const generationMatchPrecondition = 0
-    // const destFileName = 'cbimage.png';
-    // const options = {
-    //   destination: destFileName,
-    //   preconditionOpts: {ifGenerationMatch: generationMatchPrecondition},
-    // };
-    // storage.bucket(bucketName).upload("C:\\Users\\User\\Downloads\\cbimage.png", options)
+  //   async function uploadFile() {
+  //     const options = {
+  //       destination: destFileName,
+  //     };
 
+  // await storage.bucket(bucketName).upload(filePath, options);
     
     
     
@@ -88,4 +91,4 @@ type ResponseData = {
       } finally {
         //fs.rm(tempVideoPath);
       }
-  })}
+  }
