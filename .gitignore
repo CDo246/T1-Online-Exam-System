@@ -40,3 +40,5 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+hidden-outrider-398205-405ae1bed83d.json

@@ -54,13 +54,14 @@ interface ExtendedNextApiRequest extends NextApiRequest {
     // const videoFile = fData.files.video as any;
     // const tempVideoPath = videoFile.path;
     // const video = await fs.readFile(tempVideoPath);
-    console.log("Printing req.body", req);
-    const video = req.body.get("video/mp4");
+    console.log("Printing req.body", req.body);
+    const video = req.body;
     const { Storage } = require('@google-cloud/storage');
     const bucketName = "online-exam-system-videostorage";
     //const apiKey = '';
-  const storage = new Storage();
-  const file = storage.bucket(bucketName).file("video.mp4");
+    
+    const storage = new Storage();
+    const file = storage.bucket(bucketName).file("video.mp4");
 
   //const blob = new Blob(video, {type: "video/mp4",});
   //const blob2 = video.get("video/mp4");
