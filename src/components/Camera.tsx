@@ -74,19 +74,19 @@ const Camera = (): JSX.Element => {
   }, [mediaRecorderRef, selectedDevice, setCapturing]);
 
   const handleDownload = React.useCallback(() => {
-    // if (recordedChunks.length) {
-    //   const blob = new Blob(recordedChunks, {
-    //     type: "video/webm",
-    //   });
-    //   const url = URL.createObjectURL(blob);
-    //   const a = document.createElement("a");
-    //   document.body.appendChild(a);
-    //   a.href = url;
-    //   a.download = "react-webcam-stream-capture.webm";
-    //   a.click();
-    //   window.URL.revokeObjectURL(url);
-    //   setRecordedChunks([]);
-    // }
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: "video/webm",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      document.body.appendChild(a);
+      a.href = url;
+      a.download = "react-webcam-stream-capture.webm";
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setRecordedChunks([]);
+    }
   }, [recordedChunks]);
 
   let labels;
@@ -152,22 +152,17 @@ const Camera = (): JSX.Element => {
   // }, [handleDevices]);
 
   const handleTestUpload = React.useCallback(async () => {
-    console.log("OEUFO");
     mediaRecorderRef.current?.stop();
     setCapturing(false);
-    console.log("FIRST");
     if(recordedChunks.length){
       const blob = new Blob(recordedChunks, {
         type: "video/mp4",
       });
       const formData = new FormData();
-    formData.append('video/mp4', blob);
+      formData.append('video', blob, 'video.mp4');
     
-      fetch("/api/uploadvideo", {
+      await fetch("/api/uploadvideo", {
         method: "POST",
-        headers: {
-          "Content-Type": "video/mp4",  
-        },
         body: formData,
       }).then((res) => console.log(res));
     alert("success");
