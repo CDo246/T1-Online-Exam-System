@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 const formidable = require('formidable');
+const { Storage } = require('@google-cloud/storage');
 
 export const config = {
   api: {
@@ -33,7 +34,22 @@ type ResponseData = {
       }
     })
     console.log("TEST");
-    const file = data?.files?
+    if(req.body.files.video){
+      const bucketName = "online-exam-system-videostorage";
+      const storage = new Storage();
+      const file = storage.bucket(bucketName).file("video.mp4");
+      file.save(req.body.files.video, function(err:any) {
+        if (!err) {
+          // File written successfully.
+          console.log("SUCCESS");
+        }
+      });
+      
+      //-
+      // If the callback is omitted, we'll return a Promise.
+      //-
+      file.save(req.body.files.video).then(function() {});
+    }
     
     
     
@@ -44,11 +60,8 @@ type ResponseData = {
     //     return res.status(500).json({ message: "Internal Server Error" });
     //   }
     //   res.status(200).json({ message: "SUCCESS" });
-
-      const video = files.video;
-      const { Storage } = require('@google-cloud/storage');
-      const bucketName = "online-exam-system-videostorage";
-      const storage = new Storage();
+      
+      
 
     // const generationMatchPrecondition = 0
     // const destFileName = 'cbimage.png';
@@ -58,19 +71,9 @@ type ResponseData = {
     // };
     // storage.bucket(bucketName).upload("C:\\Users\\User\\Downloads\\cbimage.png", options)
 
-    const file = storage.bucket(bucketName).file("video.mp4");
     
-    file.save(video, function(err:any) {
-      if (!err) {
-        // File written successfully.
-        console.log("SUCCESS");
-      }
-    });
     
-    //-
-    // If the callback is omitted, we'll return a Promise.
-    //-
-    file.save(video).then(function() {});
+    
       
     
       //console.log("THE VIDEO SIZE IS " + video.length);
