@@ -111,7 +111,7 @@ export default function CreateAccount() {
               }),
             }).then((res) => res.json());
             console.log(response);
-            if (response.error === undefined) router.push("/");
+            if (response.error === undefined) router.push(`/?created=${email}`);
             //TODO: Create a 'verify your email' page, redirect to that instead
             else setCreateAccountError(response?.error ?? null);
           }}
