@@ -5,63 +5,63 @@ import axios from "axios";
 
 type ResponseData = {
   message: string;
-  };
+};
 interface ExtendedNextApiRequest extends NextApiRequest {
-  body: FormData
+  body: FormData;
 }
-  // type Fields = {
-  //   [fieldName: string]: string | string[];
-  // };
-  
-  // type Files = {
-  //   [fieldName: string]: {
-  //     name: string;
-  //     type: string;
-  //     size: number;
-  //     path: string;
-  //   };
-  // };
+// type Fields = {
+//   [fieldName: string]: string | string[];
+// };
 
-  // export const config = { api: { bodyParser: false } };
+// type Files = {
+//   [fieldName: string]: {
+//     name: string;
+//     type: string;
+//     size: number;
+//     path: string;
+//   };
+// };
 
-  // const parseFormData = (req: NextApiRequest): Promise<{ fields: Fields, files: Files }> => new Promise((resolve, reject) => {
-  //   const form = new IncomingForm({ multiples: false });
-  //   form.parse(req, (err: any, fields : Fields, files : Files) => {
-  //     if (err) return reject(err);
-  //     resolve({ fields, files });
-  //   });
-  // });
-  
-  // const request = async (req: NextApiRequest, video: Buffer) => {
-    // const data = new FormData();
-    // const blob = new Blob([video], { type: "video/*" });
-    // data.append("video", blob);
-  
-    // return axios.post(`${process.env.API_URL}/api/upload-video`, data, {
-    //   headers: req.headers as any,
-    // });
+// export const config = { api: { bodyParser: false } };
 
-  //   const videob = req.body as Buffer
-  // });
-  
-  export default async function handler(
-    req: ExtendedNextApiRequest,
-    res: NextApiResponse<ResponseData>
-  ) {
-    console.log("IT WORKS");
-    // const fData = await parseFormData(req);
-  
-    // const videoFile = fData.files.video as any;
-    // const tempVideoPath = videoFile.path;
-    // const video = await fs.readFile(tempVideoPath);
-    console.log("Printing req.body", req.body);
-    const video = req.body;
-    const { Storage } = require('@google-cloud/storage');
-    const bucketName = "online-exam-system-videostorage";
-    //const apiKey = '';
-    
-    const storage = new Storage();
-    const file = storage.bucket(bucketName).file("video.mp4");
+// const parseFormData = (req: NextApiRequest): Promise<{ fields: Fields, files: Files }> => new Promise((resolve, reject) => {
+//   const form = new IncomingForm({ multiples: false });
+//   form.parse(req, (err: any, fields : Fields, files : Files) => {
+//     if (err) return reject(err);
+//     resolve({ fields, files });
+//   });
+// });
+
+// const request = async (req: NextApiRequest, video: Buffer) => {
+// const data = new FormData();
+// const blob = new Blob([video], { type: "video/*" });
+// data.append("video", blob);
+
+// return axios.post(`${process.env.API_URL}/api/upload-video`, data, {
+//   headers: req.headers as any,
+// });
+
+//   const videob = req.body as Buffer
+// });
+
+export default async function handler(
+  req: ExtendedNextApiRequest,
+  res: NextApiResponse<ResponseData>
+) {
+  console.log("IT WORKS");
+  // const fData = await parseFormData(req);
+
+  // const videoFile = fData.files.video as any;
+  // const tempVideoPath = videoFile.path;
+  // const video = await fs.readFile(tempVideoPath);
+  console.log("Printing req.body", req.body);
+  const video = req.body;
+  const { Storage } = require("@google-cloud/storage");
+  const bucketName = "online-exam-system-videostorage";
+  //const apiKey = '';
+
+  const storage = new Storage();
+  const file = storage.bucket(bucketName).file("video.mp4");
 
   //const blob = new Blob(video, {type: "video/mp4",});
   //const blob2 = video.get("video/mp4");
@@ -74,32 +74,30 @@ interface ExtendedNextApiRequest extends NextApiRequest {
   //   a.click();
   //   window.URL.revokeObjectURL(url);
 
-    //return;
-  
-  
-  file.save(video, function(err:any) {
+  //return;
+
+  file.save(video, function (err: any) {
     if (!err) {
       // File written successfully.
       console.log("SUCCESS");
     }
   });
-  
+
   //-
   // If the callback is omitted, we'll return a Promise.
   //-
-  file.save(video).then(function() {});
-    
-  
-    console.log("THE VIDEO SIZE IS " + video.length);
-  
-    try {
-      const videoSize = video.length;
-      console.log("IT WORKED VIDEO SIZE IS" + videoSize);
-      //res.status(200).json({ size: videoSize });
-    } catch (error: any) {
-      console.error(error);
-      //res.status(500).json({ error: error.message });
-    } finally {
-      //fs.rm(tempVideoPath);
-    }
+  file.save(video).then(function () {});
+
+  console.log("THE VIDEO SIZE IS " + video.length);
+
+  try {
+    const videoSize = video.length;
+    console.log("IT WORKED VIDEO SIZE IS" + videoSize);
+    //res.status(200).json({ size: videoSize });
+  } catch (error: any) {
+    console.error(error);
+    //res.status(500).json({ error: error.message });
+  } finally {
+    //fs.rm(tempVideoPath);
   }
+}

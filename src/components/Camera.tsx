@@ -4,7 +4,7 @@ import Dropdown from "./Dropdown";
 import CloudVision from "./CloudVision";
 import { type } from "os";
 import { BlackBackButton, BlackButton } from "~/components/button";
-import { gcs } from 'gcs';
+import { gcs } from "gcs";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -114,8 +114,8 @@ const Camera = (): JSX.Element => {
   //   return () => {
   //     clearInterval(intervalId);
   //   };
-  // }, [handleAnalyse]); 
-  
+  // }, [handleAnalyse]);
+
   //const { Storage } = require('@google-cloud/storage');
   //const storage = window.gcs.GoogleCloud
   const bucketName = "online-exam-system-videostorage";
@@ -132,7 +132,7 @@ const Camera = (): JSX.Element => {
   //       type: "video/webm",
   //     });
   //     const fileBuffer = Buffer.from(await blob.arrayBuffer());
-      
+
   //     const date = new Date();
   //     const currentTime = date.getHours() + date.getMinutes() + date.getSeconds() + date.getDay() + date.getMonth();
   //     storage.bucket(bucketName).file(currentTime.toString()).createWriteStream({
@@ -153,24 +153,23 @@ const Camera = (): JSX.Element => {
 
   const handleTestUpload = React.useCallback(async () => {
     console.log(recordedChunks.length);
-    if(recordedChunks.length){
+    if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, {
         type: "video/mp4",
       });
       const formData = new FormData();
-    formData.append('video/mp4', blob);
-    
+      formData.append("video/mp4", blob);
+
       fetch("/api/uploadvideo", {
         method: "POST",
         headers: {
-          "Content-Type": "video/mp4",  
+          "Content-Type": "video/mp4",
         },
         body: formData,
       }).then((res) => console.log(res));
-    alert("success");
-
+      alert("success");
     }
-  }, [mediaRecorderRef, selectedDevice, setCapturing, recordedChunks])
+  }, [mediaRecorderRef, selectedDevice, setCapturing, recordedChunks]);
 
   return (
     <div>
@@ -183,7 +182,6 @@ const Camera = (): JSX.Element => {
         <div>
           <button onClick={handleStopCaptureClick}> Stop Capture</button>
         </div>
-        
       ) : (
         <div>
           <Dropdown list={devices} handler={handleDropdown} />
