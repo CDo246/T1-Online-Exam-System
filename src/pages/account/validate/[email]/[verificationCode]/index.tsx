@@ -9,7 +9,8 @@ export default function Validation() {
   const router = useRouter();
 
   const verifyAccount = api.accounts.verifyAccount.useMutation();
-  const disabled = verifyAccount.isLoading || verifyAccount.isSuccess
+
+  const disabled = verifyAccount.isLoading || verifyAccount.isSuccess;
   return (
     <CentredLayout title="Account Validation">
       <FormBox>
@@ -26,22 +27,18 @@ export default function Validation() {
             });
           }}
         >
-          <BlackButton text="Verify Account" disabled = {disabled}/>
+          <BlackButton text="Verify Account" disabled={disabled} />
         </a>
         {verifyAccount.error && (
           <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-red-700">
             <div />
-            <p className="text-white">
-              {verifyAccount.error.message}
-            </p>
+            <p className="text-white">{verifyAccount.error.message}</p>
           </div>
         )}
         {verifyAccount.isSuccess && (
           <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-green-800">
             <div />
-            <p className="text-white">
-              Email Validation Success 👍
-            </p>
+            <p className="text-white">Email Validation Success 👍</p>
           </div>
         )}
       </FormBox>
