@@ -54,7 +54,7 @@ export default function Home({
   };
 
   return (
-    <CentredLayout title="Exam Inviligation Website">
+    <CentredLayout title="Exam Invigilation Website">
       <p className="text-center text-5xl text-white">
         Exam Inviligation System
       </p>
