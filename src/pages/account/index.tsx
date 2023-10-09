@@ -43,9 +43,21 @@ export default function Account({
           </a>
         </div>
         <hr />
-        <Link href="/student/entersession">
-          <BlackButton text="Enter Session" />
-        </Link>
+        {['Examiner', 'Admin'].includes(getRole.data?.role ?? '') && (
+            <>
+              <Link href="/admin/session" className="inline-block">
+                <BlackButton text="Teacher Dashboard"/>
+              </Link>
+            </>
+          )}
+        <hr />
+        {['Student', 'Account'].includes(getRole.data?.role ?? '') && (
+            <>
+              <Link href="/student/entersession" className="inline-block">
+                <BlackButton text="Enter Session"/>
+              </Link>
+            </>
+          )}
         <hr />
         {session && (
           <div>
