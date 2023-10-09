@@ -50,7 +50,6 @@ export default function Account({
         {session && (
           <div>
             <p>Signed in as {session.user.email ?? ""}</p>
-            Signed in as {session.user.email ?? "placeholder"} <br />
             Role: {getRole.data?.role} <br />
             <button onClick={() => signOut()}>Sign out</button>
           </div>
