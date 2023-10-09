@@ -8,6 +8,8 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 
+const validRoles = ["Student", "Examiner", "Admin"];
+
 export const accountRouter = createTRPCRouter({
   createAccount: publicProcedure
     .input(
@@ -15,10 +17,11 @@ export const accountRouter = createTRPCRouter({
         name: z.string(),
         email: z.string(),
         password: z.string(),
+        role: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { name, email, password } = input;
+      const { name, email, password, role } = input;
       const salt = randomBytes(8).toString("hex");
       const hash = createHash("sha256")
         .update(`${salt}${password}`)
@@ -27,7 +30,8 @@ export const accountRouter = createTRPCRouter({
       if (
         name === "" ||
         !validator.isEmail(email) ||
-        !validator.isStrongPassword(password)
+        !validator.isStrongPassword(password) ||
+        !validRoles.includes(role)
       ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -53,7 +57,7 @@ export const accountRouter = createTRPCRouter({
           verificationCode: randomBytes(8).toString("hex"),
           password: hash,
           passwordSalt: salt,
-          role: "Account",
+          role: role,
         },
       });
       console.log(result);

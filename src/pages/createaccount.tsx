@@ -116,6 +116,7 @@ export default function CreateAccount() {
                 name: name,
                 email: email,
                 password: password,
+                role: role,
               });
               //TODO: Create a 'verify your email' page, redirect to that instead
               router.push(`/?created=${email}`);
