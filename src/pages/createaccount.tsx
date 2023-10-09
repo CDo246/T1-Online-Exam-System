@@ -5,6 +5,8 @@ import { CentredLayout } from "~/components/layouts";
 import { useEffect, useState } from "react";
 import { InputField, DropdownField, Validation } from "~/components/input";
 import router from "next/router";
+import { api } from "~/utils/api";
+import { TRPCClientError } from "@trpc/client";
 
 export default function CreateAccount() {
   const [createAccountError, setCreateAccountError] = useState<string | null>(
@@ -31,6 +33,8 @@ export default function CreateAccount() {
       setSecondPaswordValid(true);
     else setSecondPaswordValid(false);
   }, [password, secondPassword]);
+
+  const createAccount = api.accounts.createAccount.useMutation();
 
   return (
     <CentredLayout title="Create Account">
@@ -107,22 +111,19 @@ export default function CreateAccount() {
         <a
           onClick={async () => {
             if (createAccountDisabled) return;
-            const response = await fetch("/api/createaccount", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
+            try {
+              await createAccount.mutateAsync({
                 name: name,
                 email: email,
                 password: password,
-                role: role,
-              }),
-            }).then((res) => res.json());
-            console.log(response);
-            if (response.error === undefined) router.push(`/?created=${email}`);
-            //TODO: Create a 'verify your email' page, redirect to that instead
-            else setCreateAccountError(response?.error ?? null);
+              });
+              //TODO: Create a 'verify your email' page, redirect to that instead
+              router.push(`/?created=${email}`);
+            } catch (e) {
+              if (e instanceof TRPCClientError) {
+                setCreateAccountError(e.message);
+              }
+            }
           }}
         >
           <BlackButton text="Create Account" disabled={createAccountDisabled} />
