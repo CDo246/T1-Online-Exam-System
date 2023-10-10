@@ -38,13 +38,13 @@ export default function Account({
   const handleCreateSession = async () => {
     try {
       const response = await createSession.mutateAsync({
-        examinerEmail: session?.user.email ?? '',
+        examinerEmail: session?.user.email ?? "",
       });
       localStorage.setItem("sessionCode", response.uniqueCode.toString());
       setSessionCode(response.uniqueCode.toString());
-      router.push("/admin/session")
+      router.push("/admin/session");
     } catch (error) {
-      console.error('Failed to create session:', error);
+      console.error("Failed to create session:", error);
     }
   };
 

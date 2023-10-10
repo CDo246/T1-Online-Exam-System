@@ -69,14 +69,13 @@ export const sessionRouter = createTRPCRouter({
 
       console.log("Session invalidated");
       return session;
-  }),
-
-  getSessions: publicProcedure
-    .query(async ({ input, ctx }) => {
-      const sessions = await ctx.prisma.createdSession.findMany();
-      sessions.forEach((session) => {
-        console.log(session);
-      });
-      return sessions;
     }),
+
+  getSessions: publicProcedure.query(async ({ input, ctx }) => {
+    const sessions = await ctx.prisma.createdSession.findMany();
+    sessions.forEach((session) => {
+      console.log(session);
+    });
+    return sessions;
+  }),
 });

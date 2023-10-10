@@ -31,15 +31,15 @@ export default function Session() {
 
   const handleEndSession = async () => {
     try {
-      await endSession.mutateAsync({ uniqueCode: sessionCode ?? '' });
+      await endSession.mutateAsync({ uniqueCode: sessionCode ?? "" });
     } catch (error) {
       if (error instanceof TRPCClientError) {
-        console.error('Failed to end session:', error.message);
+        console.error("Failed to end session:", error.message);
       }
     } finally {
-      localStorage.removeItem('sessionCode');
+      localStorage.removeItem("sessionCode");
       setSessionCode(null);
-      router.push('/account');
+      router.push("/account");
     }
   };
   return (
