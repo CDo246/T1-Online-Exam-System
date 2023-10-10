@@ -34,7 +34,7 @@ export function SidebarLayout({ children, title }: LayoutProps) {
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="grid min-h-screen grid-cols-[auto_1fr] bg-black">
+      <main className="grid min-h-screen min-w-screen grid-cols-[auto_1fr] bg-black">
         {children}
       </main>
     </>

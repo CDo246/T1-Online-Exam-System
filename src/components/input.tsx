@@ -90,7 +90,7 @@ export function InputField({
 
 export function DropdownField(props: DropdownFieldProps) {
   return (
-    <div>
+    <>
       <label htmlFor={props.name} className="mb-1 block">
         {props.name}:
       </label>
@@ -107,6 +107,6 @@ export function DropdownField(props: DropdownFieldProps) {
           </option>
         ))}
       </select>
-    </div>
+    </>
   );
 }

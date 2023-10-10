@@ -12,15 +12,15 @@ const Dropdown = (props: DropdownProps) => {
   ));
 
   return (
-    <div>
-      <label>
-        <select
-          onChange={(choice) => props.handler(choice.target.selectedIndex)}
-        >
-          {listItems}
-        </select>
-      </label>
-    </div>
+    <>
+      <label className="mb-1 block">Select Webcam</label>
+      <select
+        onChange={(choice) => props.handler(choice.target.selectedIndex)}
+        className={`rounded-xl border-2 border-black p-3 focus:outline-none`}
+      >
+        {listItems}
+      </select>
+    </>
   );
 };
 
