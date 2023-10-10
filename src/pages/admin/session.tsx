@@ -7,12 +7,42 @@ import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { TRPCClientError } from "@trpc/client";
 
+// This is not the same as the prisma DB type, this is a custom type to collate data we want to get from the API.
+type ExamSessionType = {
+  sID: number;
+  name: string | null;
+  sessionId: string;
+  seatNumber: string;
+  startTime: Date;
+  endTime: Date | null;
+  suspiciousActivity: boolean;
+  studentId: string;
+  uniqueCode: number;
+  examinerId: string;
+};
+
 export default function Session() {
-  const [sessionCode, setSessionCode] = useState<string | null>(
-    "No Code Available"
+  const [sessionCode, setSessionCode] = useState<string | null>("");
+  const [flaggedSessions, setFlaggedSessions] = useState<string[]>([]);
+  const [examSessions, setExamSessions] = useState<ExamSessionType[]>([]);
+  const endSession = api.sessions.endSession.useMutation();
+  const flagExamSession = api.students.flagStudentSession.useMutation();
+  const unflagExamSession = api.students.unflagStudentSession.useMutation();
+  const getExamSessionsByCode = api.examSessions.getExamSessionsByCode.useQuery(
+    {
+      uniqueCode: Number(sessionCode),
+    }
   );
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (getExamSessionsByCode.data) {
+      setExamSessions(getExamSessionsByCode.data.examSessions);
+    }
+    // Log initial examSessions
+    console.log(getExamSessionsByCode.data?.examSessions);
+  }, [getExamSessionsByCode.data]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -22,8 +52,6 @@ export default function Session() {
       }
     }
   }, []);
-
-  const endSession = api.sessions.endSession.useMutation();
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(sessionCode ?? "");
@@ -42,6 +70,41 @@ export default function Session() {
       router.push("/account");
     }
   };
+
+  const handleFlagSuspiciousActivity = async (examSessionId: string) => {
+    try {
+      await flagExamSession.mutateAsync({ sessionId: examSessionId });
+      console.log("Suspicious activity flagged successfully");
+
+      setExamSessions(
+        examSessions.map((es) =>
+          es.sessionId === examSessionId
+            ? { ...es, suspiciousActivity: true }
+            : es
+        )
+      );
+    } catch (error) {
+      console.error("Failed to flag suspicious activity:", error);
+    }
+  };
+
+  const handleUnflagSuspiciousActivity = async (examSessionId: string) => {
+    try {
+      await unflagExamSession.mutateAsync({ sessionId: examSessionId });
+      console.log("Suspicious activity unflagged successfully");
+
+      setExamSessions(
+        examSessions.map((es) =>
+          es.sessionId === examSessionId
+            ? { ...es, suspiciousActivity: false }
+            : es
+        )
+      );
+    } catch (error) {
+      console.error("Failed to unflag suspicious activity:", error);
+    }
+  };
+
   return (
     <SidebarLayout title="Session">
       <Sidebar>
@@ -79,13 +142,38 @@ export default function Session() {
       </Sidebar>
       <div className="items-center justify-center p-10">
         <div className="grid grid-cols-5 flex-col gap-5">
-          <div className="h-[200px] rounded bg-white" />
-          <div className="h-[200px] rounded bg-white" />
-          <div className="h-[200px] rounded bg-white" />
-          <div className="h-[200px] rounded bg-white" />
-          <div className="h-[200px] rounded bg-white" />
-          <div className="h-[200px] rounded bg-white" />
-          <div className="h-[200px] rounded bg-white" />
+          {examSessions.map((examSession, index) => (
+            <div
+              key={index}
+              className={`flex h-[200px] flex-col items-center justify-center rounded 
+            ${examSession.suspiciousActivity ? "bg-red-500" : "bg-white"}`}
+            >
+              <div className="text-left">
+                <p>(Image Placeholder)</p>
+                <p>Name: {examSession.name}</p>
+                <p>sID: {examSession.sID}</p>
+                {examSession.suspiciousActivity ? (
+                  <button
+                    onClick={() =>
+                      handleUnflagSuspiciousActivity(examSession.sessionId)
+                    }
+                    className="mt-2 rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600"
+                  >
+                    Unflag
+                  </button>
+                ) : (
+                  <button
+                    onClick={() =>
+                      handleFlagSuspiciousActivity(examSession.sessionId)
+                    }
+                    className="mt-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                  >
+                    Flag
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </SidebarLayout>

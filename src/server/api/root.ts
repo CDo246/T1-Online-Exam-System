@@ -3,6 +3,7 @@ import { studentRouter } from "./routers/student";
 import { accountRouter } from "./routers/account";
 import { userRouter } from "./routers/user";
 import { sessionRouter } from "./routers/session";
+import { examSessionRouter } from "./routers/examSession";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   students: studentRouter,
   accounts: accountRouter,
   sessions: sessionRouter,
+  examSessions: examSessionRouter,
 });
 
 // export type definition of API

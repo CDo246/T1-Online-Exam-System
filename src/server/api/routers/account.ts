@@ -78,7 +78,7 @@ export const accountRouter = createTRPCRouter({
             data: {
               studentId: Math.floor(Math.random() * 10000000),
               userId: user.id,
-              imageId: 0,
+              // imageId: 0,
             },
           });
           console.log(student);

@@ -78,4 +78,16 @@ export const sessionRouter = createTRPCRouter({
     });
     return sessions;
   }),
+
+  isSessionValid: publicProcedure
+    .input(z.object({ uniqueCode: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const validSession = await ctx.prisma.createdSession.findUnique({
+        where: {
+          uniqueCode: Number(input.uniqueCode),
+          valid: true,
+        },
+      });
+      return validSession != null;
+    }),
 });
