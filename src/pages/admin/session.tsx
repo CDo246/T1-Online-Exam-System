@@ -5,16 +5,13 @@ import { Sidebar } from "~/components/sidebar";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
+import { TRPCClientError } from "@trpc/client";
 
 export default function Session() {
-  const { data: session, status } = useSession();
-  const examinerEmail = session?.user.email ?? "";
   const [sessionCode, setSessionCode] = useState<string | null>(
     "No Code Available"
   );
-  const { data, error } = api.sessions.createSession.useQuery({
-    examinerEmail,
-  });
+
   const router = useRouter();
 
   useEffect(() => {
@@ -22,32 +19,29 @@ export default function Session() {
       const storedCode = localStorage.getItem("sessionCode");
       if (storedCode) {
         setSessionCode(storedCode);
-        return;
-      }
-
-      if (data) {
-        const code = data.uniqueCode.toString() ?? "Error";
-        localStorage.setItem("sessionCode", code);
-        setSessionCode(code);
-      } else if (error) {
-        console.error("Failed to fetch session code:", error);
       }
     }
-  }, [data, error]);
+  }, []);
+
+  const endSession = api.sessions.endSession.useMutation();
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(sessionCode ?? "");
   };
 
-  const endSession = () => {
-    // Clear the session code from localStorage and state
-    localStorage.removeItem("sessionCode");
-    setSessionCode(null);
-
-    // Navigate back to /account
-    router.push("/account");
+  const handleEndSession = async () => {
+    try {
+      await endSession.mutateAsync({ uniqueCode: sessionCode ?? '' });
+    } catch (error) {
+      if (error instanceof TRPCClientError) {
+        console.error('Failed to end session:', error.message);
+      }
+    } finally {
+      localStorage.removeItem('sessionCode');
+      setSessionCode(null);
+      router.push('/account');
+    }
   };
-
   return (
     <SidebarLayout title="Session">
       <Sidebar>
@@ -64,7 +58,7 @@ export default function Session() {
           </div>
         </div>
         <button
-          onClick={endSession}
+          onClick={handleEndSession}
           className="mb-4 w-full rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600"
         >
           End Session

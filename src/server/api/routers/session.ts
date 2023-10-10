@@ -5,16 +5,14 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 
-// Function to generate a random 6-digit integer code
 function generateUniqueCode() {
   return Math.floor(100000 + Math.random() * 900000);
 }
 
 export const sessionRouter = createTRPCRouter({
-  // Generates a new session for an examiner
   createSession: publicProcedure
     .input(z.object({ examinerEmail: z.string() }))
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
       const user = await ctx.prisma.user.findUnique({
         where: {
           email: input.examinerEmail,
@@ -25,7 +23,6 @@ export const sessionRouter = createTRPCRouter({
         throw new Error(`User with email ${input.examinerEmail} not found`);
       }
 
-      // Generate a unique code
       let uniqueCode;
       do {
         uniqueCode = generateUniqueCode();
@@ -37,7 +34,6 @@ export const sessionRouter = createTRPCRouter({
         })
       );
 
-      // Get the examiner from the user
       const examiner = await ctx.prisma.examiner.findUnique({
         where: {
           userId: user.id,
@@ -45,18 +41,42 @@ export const sessionRouter = createTRPCRouter({
       });
 
       if (!examiner) {
-        throw new Error(`Examiner with id ${user.id} not found`);
+        throw new Error(`Examiner with userId ${user.id} not found`);
       }
 
-      // Create the session with the unique code
       const createdSession = await ctx.prisma.createdSession.create({
         data: {
           uniqueCode,
-          examinerId: examiner.id,
+          examinerId: examiner.id, // The session is created with the examinerId associated.
         },
       });
 
       console.log("Session created with code: ", createdSession.uniqueCode);
       return { uniqueCode: createdSession.uniqueCode };
+    }),
+
+  endSession: publicProcedure
+    .input(z.object({ uniqueCode: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.createdSession.update({
+        where: {
+          uniqueCode: Number(input.uniqueCode),
+        },
+        data: {
+          valid: false,
+        },
+      });
+
+      console.log("Session invalidated");
+      return session;
+  }),
+
+  getSessions: publicProcedure
+    .query(async ({ input, ctx }) => {
+      const sessions = await ctx.prisma.createdSession.findMany();
+      sessions.forEach((session) => {
+        console.log(session);
+      });
+      return sessions;
     }),
 });

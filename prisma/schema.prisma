@@ -91,6 +91,7 @@ model CreatedSession {
   id         Int         @id @default(autoincrement())
   uniqueCode Int         @unique
   examinerId Int
+  valid      Boolean     @default(true)
   examiner   Examiner    @relation(fields: [examinerId], references: [id])
   sessions   ExamSession[]
   @@unique([uniqueCode, examinerId])

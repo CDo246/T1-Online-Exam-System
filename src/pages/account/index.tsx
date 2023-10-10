@@ -5,6 +5,7 @@ import { CentredLayout } from "~/components/layouts";
 import { getCsrfToken, signOut, useSession } from "next-auth/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import router from "next/router";
+import { useEffect, useState } from "react";
 import { api } from "../../utils/api";
 import { UserRoles } from "~/utils/enums";
 
@@ -21,9 +22,32 @@ export default function Account({
     },
   });
 
+  const [sessionCode, setSessionCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedCode = localStorage.getItem("sessionCode");
+    if (storedCode) setSessionCode(storedCode);
+  }, []);
+
   const getRole = api.users.getUserRole.useQuery({
     userEmail: session?.user.email ?? "",
   });
+
+  const createSession = api.sessions.createSession.useMutation();
+
+  const handleCreateSession = async () => {
+    try {
+      const response = await createSession.mutateAsync({
+        examinerEmail: session?.user.email ?? '',
+      });
+      localStorage.setItem("sessionCode", response.uniqueCode.toString());
+      setSessionCode(response.uniqueCode.toString());
+      router.push("/admin/session")
+    } catch (error) {
+      console.error('Failed to create session:', error);
+    }
+  };
+
   return (
     <CentredLayout title="Create Account">
       <FormBox>
@@ -47,14 +71,15 @@ export default function Account({
         <hr />
         {privilegedRoles.includes((getRole.data?.role as UserRoles) ?? "") && (
           <>
-            <Link href="/admin/session" className="inline-block">
-              {typeof window !== "undefined" &&
-              localStorage.getItem("sessionCode") ? (
+            {sessionCode ? (
+              <Link href="/admin/session" className="inline-block">
                 <BlackButton text="Current Session" />
-              ) : (
+              </Link>
+            ) : (
+              <div className="inline-block" onClick={handleCreateSession}>
                 <BlackButton text="Create Session" />
-              )}
-            </Link>
+              </div>
+            )}
           </>
         )}
         <hr />
