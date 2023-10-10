@@ -8,7 +8,7 @@ import { api } from "~/utils/api";
 
 export default function Session() {
   const { data: session, status } = useSession();
-  const examinerEmail = session?.user.email || "";
+  const examinerEmail = session?.user.email ?? "";
   const [sessionCode, setSessionCode] = useState<string | null>(
     "No Code Available"
   );
@@ -36,7 +36,7 @@ export default function Session() {
   }, [data, error]);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(sessionCode || "");
+    navigator.clipboard.writeText(sessionCode ?? "");
   };
 
   const endSession = () => {
