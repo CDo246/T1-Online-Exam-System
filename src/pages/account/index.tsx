@@ -4,10 +4,12 @@ import { FormBox } from "~/components/boxes";
 import { CentredLayout } from "~/components/layouts";
 import { getCsrfToken, signOut, useSession } from "next-auth/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
-import { redirect } from "next/dist/server/api-utils";
 import router from "next/router";
-import { useRouter } from "next/router";
 import { api } from "../../utils/api";
+import { UserRoles } from "~/utils/enums";
+
+const privilegedRoles = [UserRoles.Examiner, UserRoles.Admin];
+const defaultRoles = [UserRoles.Student, UserRoles.Default];
 
 export default function Account({
   csrfToken,
@@ -43,7 +45,7 @@ export default function Account({
           </a>
         </div>
         <hr />
-        {["Examiner", "Admin"].includes(getRole.data?.role ?? "") && (
+        {privilegedRoles.includes(getRole.data?.role as UserRoles ?? "") && (
           <>
             <Link href="/admin/session" className="inline-block">
               <BlackButton text="Teacher Dashboard" />
@@ -51,7 +53,7 @@ export default function Account({
           </>
         )}
         <hr />
-        {["Student", "Account"].includes(getRole.data?.role ?? "") && (
+        {defaultRoles.includes(getRole.data?.role as UserRoles ?? "") && (
           <>
             <Link href="/student/entersession" className="inline-block">
               <BlackButton text="Enter Session" />

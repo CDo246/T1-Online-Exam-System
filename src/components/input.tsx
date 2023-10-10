@@ -1,6 +1,7 @@
 import { useState } from "react";
 import validator from "validator";
 import React from "react";
+import { UserRoles } from "~/utils/enums";
 
 export enum Validation {
   None = "None",
@@ -24,8 +25,8 @@ interface InputConfig {
 interface DropdownFieldProps {
   name: string;
   value: string;
-  setValue: (value: string) => void;
-  valid?: boolean; // Optional prop
+  values: string[]; // Define as an array of strings
+  setValue: React.Dispatch<React.SetStateAction<UserRoles>>;
 }
 
 function checkValidity(value: string, validation: Validation): boolean {
@@ -97,11 +98,14 @@ export function DropdownField(props: DropdownFieldProps) {
         name={props.name}
         id={props.name}
         value={props.value}
-        onChange={(e) => props.setValue(e.target.value)}
+        onChange={(e) => props.setValue(e.target.value as UserRoles)} // Cast to UserRoles
         className={`rounded-xl border-2 border-black p-3 focus:outline-none`}
       >
-        <option value="Student">Student</option>
-        <option value="Examiner">Examiner</option>
+        {props.values.map((optionValue) => (
+          <option key={optionValue} value={optionValue}>
+            {optionValue}
+          </option>
+        ))}
       </select>
     </div>
   );

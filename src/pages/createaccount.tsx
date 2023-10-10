@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { InputField, DropdownField, Validation } from "~/components/input";
 import router from "next/router";
 import { api } from "~/utils/api";
+import { UserRoles } from "~/utils/enums"
 import { TRPCClientError } from "@trpc/client";
 
 export default function CreateAccount() {
@@ -14,8 +15,7 @@ export default function CreateAccount() {
   );
   const [name, setName] = useState("");
   const [nameValid, setNameValid] = useState(false);
-  const [role, setRole] = useState("");
-  const [roleValid, setRoleValid] = useState(false);
+  const [role, setRole] = useState<UserRoles>(UserRoles.Student);
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState(false);
   const [password, setPassword] = useState("");
@@ -80,8 +80,8 @@ export default function CreateAccount() {
         <DropdownField
           name="Role"
           value={role}
+          values={["Student", "Examiner"]}
           setValue={setRole}
-          valid={roleValid}
         />
         <InputField
           name="Password"
@@ -112,6 +112,7 @@ export default function CreateAccount() {
           onClick={async () => {
             if (createAccountDisabled) return;
             try {
+              console.log("Role is", role)
               await createAccount.mutateAsync({
                 name: name,
                 email: email,

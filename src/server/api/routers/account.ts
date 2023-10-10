@@ -2,13 +2,12 @@ import { TRPCError } from "@trpc/server";
 import { createHash, randomBytes } from "crypto";
 import validator from "validator";
 import { z } from "zod";
+import { UserRoles } from "~/utils/enums"
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-
-const validRoles = ["Student", "Examiner", "Admin"];
 
 export const accountRouter = createTRPCRouter({
   createAccount: publicProcedure
@@ -27,12 +26,14 @@ export const accountRouter = createTRPCRouter({
         .update(`${salt}${password}`)
         .digest("hex");
       console.log(hash);
+      console.log('here', role, Object.values(UserRoles).includes(role as UserRoles))
       if (
         name === "" ||
         !validator.isEmail(email) ||
         !validator.isStrongPassword(password) ||
-        !validRoles.includes(role)
+        !Object.values(UserRoles).includes(role as UserRoles)
       ) {
+        console.log('here', Object.values(UserRoles).includes(role as UserRoles))
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Incorrect Details",
