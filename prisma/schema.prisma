@@ -70,60 +70,71 @@ model VerificationToken {
 }
 
 model Student {
-  id        Int           @id @default(autoincrement())
+  id        String        @id @default(cuid())
   studentId Int           @unique
   userId    String        @unique
-  imageId   Int
-  picture   Image         @relation(fields: [imageId], references: [id])
+  // imageId   Int
+  // picture   Image         @relation(fields: [imageId], references: [id])
   user      User          @relation(fields: [userId], references: [id])
   sessions  ExamSession[]
 }
 
 model Examiner {
-  id         Int           @id @default(autoincrement())
-  examinerId Int           @unique
-  userId     String        @unique
-  user       User          @relation(fields: [userId], references: [id])
-  sessions   ExamSession[]
+  id              String           @id @default(cuid())
+  examinerId      Int              @unique
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id])
+  createdSessions CreatedSession[]
 }
 
-// Structure to track each exam session created by a student, if there was any suspicious activity, and store list of any notifications or recordings.
+model CreatedSession {
+  id         String        @id @default(cuid())
+  uniqueCode Int           @unique
+  examinerId String
+  valid      Boolean       @default(true)
+  examiner   Examiner      @relation(fields: [examinerId], references: [id])
+  sessions   ExamSession[]
+
+  @@unique([uniqueCode, examinerId])
+}
+
 model ExamSession {
-  sessionId          Int            @id @default(autoincrement())
+  sessionId          String         @id @default(cuid())
   seatNumber         String
   startTime          DateTime
   endTime            DateTime?
   suspiciousActivity Boolean        @default(false) // Field for tracking suspicious activity
-  Notification       Notification[]
-  Recording          Recording[]
-  studentId          Int
+  notifications      Notification[]
+  recordings         Recording[]
+  studentId          String
   student            Student        @relation(fields: [studentId], references: [id])
-  examinerId         Int
-  examiner           Examiner       @relation(fields: [examinerId], references: [id])
+  uniqueCode         Int
+  examinerId         String
+  createdSession     CreatedSession @relation(fields: [uniqueCode, examinerId], references: [uniqueCode, examinerId])
 }
 
 // Notification that is sent to examiner/admin (could contain `content` such as `student X is suspicious`)
 // Has relations to User as well as Exam Session due to convenience of saving all notifications for a particular user.
 model Notification {
-  id        Int         @id @default(autoincrement())
+  id        String      @id @default(cuid())
   content   String
   createdAt DateTime    @default(now())
-  sessionId Int
+  sessionId String
   exam      ExamSession @relation(fields: [sessionId], references: [sessionId])
 }
 
 // Image stored per student for facial recognition purpose.
 model Image {
-  id      Int       @id @default(autoincrement())
-  name    String
-  data    Bytes // Binary image data (i.e. png)
-  Student Student[]
+  id   String @id @default(cuid())
+  name String
+  data Bytes // Binary image data (i.e. png)
+  // Student Student[]
 }
 
 // Video recording of a specific Exam Session (which is transitively associated with a Student)
 model Recording {
-  id        Int         @id @default(autoincrement())
-  sessionId Int
+  id        String      @id @default(cuid())
+  sessionId String
   data      Bytes // Binary video data (i.e. mp4)
   exam      ExamSession @relation(fields: [sessionId], references: [sessionId])
   createdAt DateTime    @default(now())

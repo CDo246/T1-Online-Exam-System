@@ -112,7 +112,7 @@ export const studentRouter = createTRPCRouter({
     }),
 
   createNotification: publicProcedure
-    .input(z.object({ sessionId: z.number() }))
+    .input(z.object({ sessionId: z.string() }))
     .query(async ({ input, ctx }) => {
       const session = await ctx.prisma.examSession.findUnique({
         where: {
@@ -124,24 +124,42 @@ export const studentRouter = createTRPCRouter({
         throw new Error(`Session with id ${input.sessionId} not found`);
       }
 
-      const student = await studentRouter
-        .createCaller(ctx)
-        .getStudentDetails({ userId: String(session.studentId) });
+      const student = await ctx.prisma.student.findUnique({
+        where: {
+          id: session.studentId,
+        },
+      });
+
+      if (!student) {
+        throw new Error(`Student with id ${session.studentId} not found`);
+      }
+
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          id: student.userId,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with id ${student.userId} not found`);
+      }
 
       // Create new notification relating to session
       const notification = await ctx.prisma.notification.create({
         data: {
-          content: `[Suspicious activity flagged] SID: ${session.studentId} Name: ${student.name}`,
+          content: `[Suspicious activity flagged] studentId: ${session.studentId} Name: ${user.name}`,
           sessionId: session.sessionId,
         },
       });
+
+      return notification;
     }),
 
   // Flag the session if suspicious activity has been found
   // Create a notification relating to the session, store in DB
   flagStudentSession: publicProcedure
-    .input(z.object({ sessionId: z.number() }))
-    .query(async ({ input, ctx }) => {
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
       const session = await ctx.prisma.examSession.findUnique({
         where: {
           sessionId: input.sessionId,
@@ -169,5 +187,43 @@ export const studentRouter = createTRPCRouter({
 
       // Ideally, we want the notifications to act like real-time events, so we will need to implement a design pattern with the teacher/admin API to check for any newly created
       // notifications associated to any sessions they are overwatching.
+      return updatedSession;
+    }),
+
+  unflagStudentSession: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
+
+      // If session's suspiciousActivity is already false, you might want to handle it (optional)
+      if (!session.suspiciousActivity) {
+        throw new Error(`Session with id ${input.sessionId} is not flagged`);
+      }
+
+      // Update the session to set suspiciousActivity to false
+      const updatedSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId,
+        },
+        data: {
+          suspiciousActivity: false,
+        },
+      });
+
+      await ctx.prisma.notification.deleteMany({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      return updatedSession;
     }),
 });

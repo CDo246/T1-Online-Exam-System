@@ -3,9 +3,10 @@ import { BlackBackButton, BlackButton } from "~/components/button";
 import { FormBox } from "~/components/boxes";
 import { CentredLayout } from "~/components/layouts";
 import { useEffect, useState } from "react";
-import { InputField, Validation } from "~/components/input";
+import { InputField, DropdownField, Validation } from "~/components/input";
 import router from "next/router";
 import { api } from "~/utils/api";
+import { UserRoles } from "~/utils/enums";
 import { TRPCClientError } from "@trpc/client";
 
 export default function CreateAccount() {
@@ -14,6 +15,7 @@ export default function CreateAccount() {
   );
   const [name, setName] = useState("");
   const [nameValid, setNameValid] = useState(false);
+  const [role, setRole] = useState<UserRoles>(UserRoles.Student);
   const [email, setEmail] = useState("");
   const [emailValid, setEmailValid] = useState(false);
   const [password, setPassword] = useState("");
@@ -75,6 +77,12 @@ export default function CreateAccount() {
           setValid={setEmailValid}
           validation={Validation.Email}
         />
+        <DropdownField
+          name="Role"
+          value={role}
+          values={["Student", "Examiner"]}
+          setValue={setRole}
+        />
         <InputField
           name="Password"
           type="password"
@@ -104,10 +112,12 @@ export default function CreateAccount() {
           onClick={async () => {
             if (createAccountDisabled) return;
             try {
+              console.log("Role is", role);
               await createAccount.mutateAsync({
                 name: name,
                 email: email,
                 password: password,
+                role: role,
               });
               //TODO: Create a 'verify your email' page, redirect to that instead
               router.push(`/?created=${email}`);
