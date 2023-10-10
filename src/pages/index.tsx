@@ -39,7 +39,8 @@ export default function Home({
       email: email,
       password: password,
       redirect: false,
-    }).then((res) => {
+    })
+    .then((res) => {
       setLoginError(res?.error ?? null);
       console.log("Client Sign-In Result: ");
       console.log(res);

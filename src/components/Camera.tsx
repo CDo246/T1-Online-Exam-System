@@ -116,7 +116,7 @@ const Camera = (): JSX.Element => {
           audio={false}
           videoConstraints={{ deviceId: selectedDevice?.deviceId }}
           ref={cameraRef}
-          className="w-[35vw] object-contain"
+          className="w-full max-h-[50vh] object-contain"
         />
       </div>
 
