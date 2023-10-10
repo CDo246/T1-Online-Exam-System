@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { createHash, randomBytes } from "crypto";
 import validator from "validator";
 import { z } from "zod";
-import { UserRoles } from "~/utils/enums"
+import { UserRoles } from "~/utils/enums";
 import {
   createTRPCRouter,
   publicProcedure,
@@ -26,14 +26,21 @@ export const accountRouter = createTRPCRouter({
         .update(`${salt}${password}`)
         .digest("hex");
       console.log(hash);
-      console.log('here', role, Object.values(UserRoles).includes(role as UserRoles))
+      console.log(
+        "here",
+        role,
+        Object.values(UserRoles).includes(role as UserRoles)
+      );
       if (
         name === "" ||
         !validator.isEmail(email) ||
         !validator.isStrongPassword(password) ||
         !Object.values(UserRoles).includes(role as UserRoles)
       ) {
-        console.log('here', Object.values(UserRoles).includes(role as UserRoles))
+        console.log(
+          "here",
+          Object.values(UserRoles).includes(role as UserRoles)
+        );
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Incorrect Details",
@@ -51,7 +58,7 @@ export const accountRouter = createTRPCRouter({
         });
       }
       console.log("Creating account");
-      const result = await ctx.prisma.user.create({
+      const user = await ctx.prisma.user.create({
         data: {
           name: name,
           email: email,
@@ -61,7 +68,36 @@ export const accountRouter = createTRPCRouter({
           role: role,
         },
       });
-      console.log(result);
+      console.log(user);
+
+      // Create role specific DB model instances
+      // TODO: Add role specific data to account creation (studentID/Image, examinerID)
+      switch (role) {
+        case UserRoles.Student:
+          const student = await ctx.prisma.student.create({
+            data: {
+              studentId: Math.floor(Math.random() * 10000000),
+              userId: user.id,
+              imageId: 0,
+            },
+          });
+          console.log(student);
+          break;
+
+        case UserRoles.Examiner:
+          const examiner = await ctx.prisma.examiner.create({
+            data: {
+              examinerId: Math.floor(Math.random() * 10000000),
+              userId: user.id,
+            },
+          });
+          console.log(examiner);
+          break;
+
+        default:
+          // Handle other roles or cases if needed
+          break;
+      }
     }),
 
   verifyAccount: publicProcedure

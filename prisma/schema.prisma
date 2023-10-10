@@ -80,26 +80,35 @@ model Student {
 }
 
 model Examiner {
-  id         Int           @id @default(autoincrement())
-  examinerId Int           @unique
-  userId     String        @unique
-  user       User          @relation(fields: [userId], references: [id])
-  sessions   ExamSession[]
+  id         Int      @id @default(autoincrement())
+  examinerId Int      @unique
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  createdSessions CreatedSession[]
 }
 
-// Structure to track each exam session created by a student, if there was any suspicious activity, and store list of any notifications or recordings.
+model CreatedSession {
+  id         Int         @id @default(autoincrement())
+  uniqueCode Int         @unique
+  examinerId Int
+  examiner   Examiner    @relation(fields: [examinerId], references: [id])
+  sessions   ExamSession[]
+  @@unique([uniqueCode, examinerId])
+}
+
 model ExamSession {
   sessionId          Int            @id @default(autoincrement())
   seatNumber         String
   startTime          DateTime
   endTime            DateTime?
   suspiciousActivity Boolean        @default(false) // Field for tracking suspicious activity
-  Notification       Notification[]
-  Recording          Recording[]
+  notifications      Notification[]
+  recordings         Recording[]
   studentId          Int
   student            Student        @relation(fields: [studentId], references: [id])
+  uniqueCode         Int
   examinerId         Int
-  examiner           Examiner       @relation(fields: [examinerId], references: [id])
+  createdSession     CreatedSession @relation(fields: [uniqueCode, examinerId], references: [uniqueCode, examinerId])
 }
 
 // Notification that is sent to examiner/admin (could contain `content` such as `student X is suspicious`)

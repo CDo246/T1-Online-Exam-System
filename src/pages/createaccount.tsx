@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { InputField, DropdownField, Validation } from "~/components/input";
 import router from "next/router";
 import { api } from "~/utils/api";
-import { UserRoles } from "~/utils/enums"
+import { UserRoles } from "~/utils/enums";
 import { TRPCClientError } from "@trpc/client";
 
 export default function CreateAccount() {
@@ -112,7 +112,7 @@ export default function CreateAccount() {
           onClick={async () => {
             if (createAccountDisabled) return;
             try {
-              console.log("Role is", role)
+              console.log("Role is", role);
               await createAccount.mutateAsync({
                 name: name,
                 email: email,

@@ -45,15 +45,20 @@ export default function Account({
           </a>
         </div>
         <hr />
-        {privilegedRoles.includes(getRole.data?.role as UserRoles ?? "") && (
+        {privilegedRoles.includes((getRole.data?.role as UserRoles) ?? "") && (
           <>
             <Link href="/admin/session" className="inline-block">
-              <BlackButton text="Teacher Dashboard" />
+              {typeof window !== "undefined" &&
+              localStorage.getItem("sessionCode") ? (
+                <BlackButton text="Current Session" />
+              ) : (
+                <BlackButton text="Create Session" />
+              )}
             </Link>
           </>
         )}
         <hr />
-        {defaultRoles.includes(getRole.data?.role as UserRoles ?? "") && (
+        {defaultRoles.includes((getRole.data?.role as UserRoles) ?? "") && (
           <>
             <Link href="/student/entersession" className="inline-block">
               <BlackButton text="Enter Session" />
