@@ -12,7 +12,7 @@ export function CentredLayout({ children, title }: LayoutProps) {
         <title>{title}</title>
         <meta
           name="description"
-          content="This is a website for inviligating exams."
+          content="This is a website for invigilating exams."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -30,7 +30,7 @@ export function SidebarLayout({ children, title }: LayoutProps) {
         <title>{title}</title>
         <meta
           name="description"
-          content="This is a website for inviligating exams."
+          content="This is a website for invigilating exams."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
