@@ -40,6 +40,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  secret: "THIS_REALLY_SHOULD_BE_A_DOTENV",
   callbacks: {
     /*     async session({ session, user }) { 
       console.log("\n\n\n Session Test")
@@ -58,9 +59,6 @@ export const authOptions: NextAuthOptions = {
     signIn(profile) {
       //Handles signing in
       // https://next-auth.js.org/configuration/callbacks
-
-      console.log("\n\n\n signIn test");
-      console.log(profile);
       const isAllowedToSignIn = true;
       if (isAllowedToSignIn) return true;
       else return false; // Return false to display a default error message
