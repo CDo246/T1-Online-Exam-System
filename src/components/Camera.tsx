@@ -110,36 +110,36 @@ const Camera = (): JSX.Element => {
   }, [handleDevices]);
 
   return (
-    <div className="flex flex-col max-h-full min-h-full overflow-y-auto gap-2">
-      <div className="flex-1 max-h-full overflow-y-auto">
+    <div className="flex max-h-full min-h-full flex-col gap-2 overflow-y-auto">
+      <div className="max-h-full flex-1 overflow-y-auto">
         <Webcam
           audio={false}
           videoConstraints={{ deviceId: selectedDevice?.deviceId }}
           ref={cameraRef}
-          className="w-full max-h-[50vh] object-contain"
+          className="max-h-[50vh] w-full object-contain"
         />
       </div>
 
       {capturing ? (
         <a onClick={handleStopCaptureClick}>
-          <BlackButton text="Stop Capture"/>
+          <BlackButton text="Stop Capture" />
         </a>
       ) : (
         <>
           <Dropdown list={devices} handler={handleDropdown} />
           <a onClick={handleStartCaptureClick}>
-            <BlackButton text="Start Capture"/>
+            <BlackButton text="Start Capture" />
           </a>
         </>
       )}
       {recordedChunks.length > 0 && (
         <a onClick={handleDownload}>
-          <BlackButton text="Download"/>
+          <BlackButton text="Download" />
         </a>
       )}
 
       <a onClick={handleAnalyse}>
-        <BlackButton text="Analyse Image"/>
+        <BlackButton text="Analyse Image" />
       </a>
       {imgSrc && <img src={imgSrc} />}
 

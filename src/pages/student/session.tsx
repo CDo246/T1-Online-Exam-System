@@ -16,14 +16,12 @@ export default function Session() {
           <p className="text-gray-600">Settings</p>
         </Link>
       </Sidebar>
-      
+
       <div className="max-h-full overflow-y-auto p-3">
         <GrowFormBoxFullHeight>
           <Camera />
         </GrowFormBoxFullHeight>
       </div>
-      
-
     </SidebarLayout>
   );
 }
