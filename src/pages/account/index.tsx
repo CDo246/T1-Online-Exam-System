@@ -23,6 +23,7 @@ export default function Account({
   });
 
   const [sessionCode, setSessionCode] = useState<string>("");
+  const [invalidSessionCode, setInvalidSessionCode] = useState(false);
   const createSession = api.sessions.createSession.useMutation();
   const createExamSession = api.examSessions.createExamSession.useMutation();
   const isSessionValid = api.sessions.isSessionValid.useMutation();
@@ -62,6 +63,7 @@ export default function Account({
         });
         router.push("/student/session");
       } else {
+        setInvalidSessionCode(true);
         console.error("Invalid session code");
       }
     } catch (error) {
@@ -106,6 +108,18 @@ export default function Account({
         {defaultRoles.includes((getRole.data?.role as UserRoles) ?? "") && (
           <>
             <hr />
+            {invalidSessionCode && (
+              <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-red-700">
+                <div />
+                <p className="text-white">Invalid Session Code</p>
+                <button
+                  className="px-2 text-right text-white"
+                  onClick={() => setInvalidSessionCode(false)}
+                >
+                  X
+                </button>
+              </div>
+            )}
             <input
               className="rounded-xl border-2 border-black p-3"
               type="text"
