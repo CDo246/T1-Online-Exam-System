@@ -145,13 +145,13 @@ export default function Session() {
           {examSessions.map((examSession, index) => (
             <div
               key={index}
-              className={`flex h-[200px] flex-col items-center justify-center rounded 
+              className={`flex h-[200px] flex-col items-center justify-center rounded border-4 border-gray-700
             ${examSession.suspiciousActivity ? "bg-red-500" : "bg-white"}`}
             >
               <div className="text-left">
                 <p>(Image Placeholder)</p>
                 <p>Name: {examSession.name}</p>
-                <p>sID: {examSession.sID}</p>
+                <p>ID: {examSession.sID}</p>
                 {examSession.suspiciousActivity ? (
                   <button
                     onClick={() =>

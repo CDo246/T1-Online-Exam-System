@@ -113,6 +113,7 @@ export const examSessionRouter = createTRPCRouter({
           return {
             ...examSession,
             sID: student.studentId,
+            image: student.imageBase64,
             name: user.name,
           };
         })

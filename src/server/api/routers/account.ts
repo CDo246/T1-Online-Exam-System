@@ -63,12 +63,10 @@ export const accountRouter = createTRPCRouter({
       password: z.string(),
       studentId: z.number(),
       verificationCode: z.number(),
-      imageUrl: z.string(),
-
     })
   )
   .mutation(async ({ input, ctx }) => {
-    const { name, email, password, studentId, verificationCode, imageUrl } = input;
+    const { name, email, password, studentId, verificationCode } = input;
     const salt = randomBytes(8).toString("hex");
     const hash = createHash("sha256")
       .update(`${salt}${password}`)
@@ -144,11 +142,10 @@ export const accountRouter = createTRPCRouter({
       email: z.string(),
       password: z.string(),
       examinerCreationCode: z.number(),
-      role: z.string(),
     })
   )
   .mutation(async ({ input, ctx }) => {
-    const { name, email, password, examinerCreationCode, role } = input;
+    const { name, email, password, examinerCreationCode } = input;
     const salt = randomBytes(8).toString("hex");
     const hash = createHash("sha256")
       .update(`${salt}${password}`)
@@ -157,13 +154,8 @@ export const accountRouter = createTRPCRouter({
     if (
       name === "" ||
       !validator.isEmail(email) ||
-      !validator.isStrongPassword(password) ||
-      !Object.values(UserRoles).includes(role as UserRoles)
+      !validator.isStrongPassword(password)
     ) {
-      console.log(
-        "here",
-        Object.values(UserRoles).includes(role as UserRoles)
-      );
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Incorrect Details.",
@@ -194,7 +186,7 @@ export const accountRouter = createTRPCRouter({
         verificationCode: randomBytes(8).toString("hex"),
         password: hash,
         passwordSalt: salt,
-        role: role,
+        role: "Examiner",
       },
     });
     console.log(user);
@@ -208,135 +200,6 @@ export const accountRouter = createTRPCRouter({
     console.log(examiner);
   }),
   
-
-
-  createAccount: publicProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        email: z.string(),
-        password: z.string(),
-        role: z.string(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { name, email, password, role } = input;
-      const salt = randomBytes(8).toString("hex");
-      const hash = createHash("sha256")
-        .update(`${salt}${password}`)
-        .digest("hex");
-      console.log(hash);
-      console.log(
-        "here",
-        role,
-        Object.values(UserRoles).includes(role as UserRoles)
-      );
-      if (
-        name === "" ||
-        !validator.isEmail(email) ||
-        !validator.isStrongPassword(password) ||
-        !Object.values(UserRoles).includes(role as UserRoles)
-      ) {
-        console.log(
-          "here",
-          Object.values(UserRoles).includes(role as UserRoles)
-        );
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Incorrect Details",
-        });
-      }
-      const existingAccount = await ctx.prisma.user.findFirst({
-        where: {
-          email: email,
-        },
-      });
-      if (existingAccount) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Account with this email already exists",
-        });
-      }
-      console.log("Creating account");
-      const user = await ctx.prisma.user.create({
-        data: {
-          name: name,
-          email: email,
-          verificationCode: randomBytes(8).toString("hex"),
-          password: hash,
-          passwordSalt: salt,
-          role: role,
-        },
-      });
-      console.log(user);
-
-      // Create role specific DB model instances
-      // TODO: Add role specific data to account creation (studentID/Image, examinerID)
-      switch (role) {
-        case UserRoles.Student:
-          const student = await ctx.prisma.student.create({
-            data: {
-              studentId: Math.floor(Math.random() * 10000000),
-              userId: user.id,
-              // imageId: 0,
-            },
-          });
-          console.log(student);
-          break;
-
-        case UserRoles.Examiner:
-          const examiner = await ctx.prisma.examiner.create({
-            data: {
-              examinerId: Math.floor(Math.random() * 10000000),
-              userId: user.id,
-            },
-          });
-          console.log(examiner);
-          break;
-
-        default:
-          // Handle other roles or cases if needed
-          break;
-      }
-    }),
-
-  verifyAccount: publicProcedure
-    .input(
-      z.object({
-        email: z.string(),
-        verificationCode: z.string(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { email, verificationCode } = input;
-      const user = await ctx.prisma.user.findFirst({
-        where: {
-          email: email,
-        },
-      });
-      console.log(user);
-      if (user === null) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "User Not Found",
-        });
-      } else if (verificationCode !== user.verificationCode) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Incorrect Verification Code",
-        });
-      } else {
-        ctx.prisma.user.update({
-          where: {
-            email: email,
-          },
-          data: {
-            emailVerified: new Date(),
-          },
-        });
-      }
-    }),
-
   updatePassword: publicProcedure
     .input(
       z.object({

@@ -62,7 +62,7 @@ export default function CreateStudent() {
   return (
     <CentredLayout title="Create Student">
       <FormBox>
-        <Link href="/">
+        <Link href="/account">
           <BlackBackButton />
         </Link>
         <hr />
