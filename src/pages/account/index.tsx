@@ -22,7 +22,11 @@ export default function Account({
     },
   });
 
-  const [sessionCode, setSessionCode] = useState<string | null>(null);
+  const [sessionCode, setSessionCode] = useState<string>("");
+  const [invalidSessionCode, setInvalidSessionCode] = useState(false);
+  const createSession = api.sessions.createSession.useMutation();
+  const createExamSession = api.examSessions.createExamSession.useMutation();
+  const isSessionValid = api.sessions.isSessionValid.useMutation();
 
   useEffect(() => {
     const storedCode = localStorage.getItem("sessionCode");
@@ -32,8 +36,6 @@ export default function Account({
   const getRole = api.users.getUserRole.useQuery({
     userEmail: session?.user.email ?? "",
   });
-
-  const createSession = api.sessions.createSession.useMutation();
 
   const handleCreateSession = async () => {
     try {
@@ -48,12 +50,33 @@ export default function Account({
     }
   };
 
+  const handleEnterSession = async () => {
+    try {
+      // Check if session code is valid
+      const isValid = await isSessionValid.mutateAsync({
+        uniqueCode: sessionCode,
+      });
+
+      if (isValid) {
+        await createExamSession.mutateAsync({
+          uniqueCode: Number(sessionCode),
+        });
+        router.push("/student/session");
+      } else {
+        setInvalidSessionCode(true);
+        console.error("Invalid session code");
+      }
+    } catch (error) {
+      console.error("Failed to enter session:", error);
+    }
+  };
+
   return (
     <CentredLayout title="Create Account">
       <FormBox>
         <div className="grid grid-flow-col grid-cols-[1fr,auto,auto] gap-1 overflow-x-auto">
           <p className="align-center flex-1 text-center text-xl">
-            Welcome, {session?.user.name ?? ""}
+            Welcome, {session?.user.name ?? ""} ({session?.user.email ?? ""})
           </p>
           <Link href="/account/settings" className="h-full">
             <BlackButton text="Account Settings" />
@@ -68,9 +91,9 @@ export default function Account({
             <BlackButton text="Log Out" />
           </a>
         </div>
-        <hr />
         {privilegedRoles.includes((getRole.data?.role as UserRoles) ?? "") && (
           <>
+            <hr />
             {sessionCode ? (
               <Link href="/admin/session" className="inline-block">
                 <BlackButton text="Current Session" />
@@ -82,21 +105,32 @@ export default function Account({
             )}
           </>
         )}
-        <hr />
         {defaultRoles.includes((getRole.data?.role as UserRoles) ?? "") && (
           <>
-            <Link href="/student/entersession" className="inline-block">
+            <hr />
+            {invalidSessionCode && (
+              <div className="grid grid-cols-[1fr_auto_1fr] rounded-full bg-red-700">
+                <div />
+                <p className="text-white">Invalid Session Code</p>
+                <button
+                  className="px-2 text-right text-white"
+                  onClick={() => setInvalidSessionCode(false)}
+                >
+                  X
+                </button>
+              </div>
+            )}
+            <input
+              className="rounded-xl border-2 border-black p-3"
+              type="text"
+              placeholder="Session Code"
+              value={sessionCode}
+              onChange={(e) => setSessionCode(e.target.value)}
+            ></input>
+            <div onClick={handleEnterSession}>
               <BlackButton text="Enter Session" />
-            </Link>
+            </div>
           </>
-        )}
-        <hr />
-        {session && (
-          <div>
-            <p>Signed in as {session.user.email ?? ""}</p>
-            Role: {getRole.data?.role} <br />
-            <button onClick={() => signOut()}>Sign out</button>
-          </div>
         )}
       </FormBox>
     </CentredLayout>
