@@ -187,7 +187,6 @@ const Camera = (): JSX.Element => {
           <BlackButton text="Download" />
         </a>
       )}
-
       <a onClick={handleAnalyse}>
         <BlackButton text="Analyse Image" />
       </a>
