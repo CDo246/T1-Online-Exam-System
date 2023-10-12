@@ -4,7 +4,7 @@ import Dropdown from "./Dropdown";
 import CloudVision from "./CloudVision";
 import { type } from "os";
 import { BlackBackButton, BlackButton } from "~/components/button";
-import { gcs } from "gcs";
+//import { gcs } from "gcs";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -74,19 +74,19 @@ const Camera = (): JSX.Element => {
   }, [mediaRecorderRef, selectedDevice, setCapturing]);
 
   const handleDownload = React.useCallback(() => {
-    // if (recordedChunks.length) {
-    //   const blob = new Blob(recordedChunks, {
-    //     type: "video/webm",
-    //   });
-    //   const url = URL.createObjectURL(blob);
-    //   const a = document.createElement("a");
-    //   document.body.appendChild(a);
-    //   a.href = url;
-    //   a.download = "react-webcam-stream-capture.webm";
-    //   a.click();
-    //   window.URL.revokeObjectURL(url);
-    //   setRecordedChunks([]);
-    // }
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: "video/webm",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      document.body.appendChild(a);
+      a.href = url;
+      a.download = "react-webcam-stream-capture.webm";
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setRecordedChunks([]);
+    }
   }, [recordedChunks]);
 
   let labels;
@@ -155,15 +155,17 @@ const Camera = (): JSX.Element => {
     console.log(recordedChunks.length);
     if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, {
-        type: "video/mp4",
+        type: "video/webm",
       });
       const formData = new FormData();
-      formData.append("video/mp4", blob);
-
+      formData.append("video/webm", blob);
+      console.log("FormData", formData);
+      console.log("FormData.get", formData.get("video/webm"));
+      console.log("THIS IS THE TYPE OF BLOB", typeof blob);
       fetch("/api/uploadvideo", {
         method: "POST",
         headers: {
-          "Content-Type": "video/mp4",
+          "Content-Type": "video/webm",
         },
         body: formData,
       }).then((res) => console.log(res));

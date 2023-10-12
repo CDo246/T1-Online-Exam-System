@@ -54,14 +54,22 @@ export default async function handler(
   // const videoFile = fData.files.video as any;
   // const tempVideoPath = videoFile.path;
   // const video = await fs.readFile(tempVideoPath);
-  console.log("Printing req.body", req.body);
-  const video = req.body;
+  console.log(req)
+  const videoString = req.body;
+  const video = new Blob ([videoString], {
+    type: 'video/webm'
+  })
+  
+  // const video = new File(
+  //   [blob],
+  //   "demo.webm"
+  //   )
   const { Storage } = require("@google-cloud/storage");
   const bucketName = "online-exam-system-videostorage";
   //const apiKey = '';
 
   const storage = new Storage();
-  const file = storage.bucket(bucketName).file("video.mp4");
+  const file = storage.bucket(bucketName).file("video.webm");
 
   //const blob = new Blob(video, {type: "video/mp4",});
   //const blob2 = video.get("video/mp4");
