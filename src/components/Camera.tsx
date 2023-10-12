@@ -105,6 +105,47 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
+  const AWS = require('aws-sdk');
+  const config = {
+    accessKeyId: 'MyKey',
+    secretAccessKey: 'MyKey',
+    region: 'ap-southeast-2',
+  }
+  AWS.config.update(config);
+  //const tmpCred = new SessionAWSCredentials();
+  const client = new AWS.S3({params : {Bucket: 'online-anti-cheat'}});
+    const handleUpload = React.useCallback(async () => {
+
+      mediaRecorderRef.current?.stop();
+      setCapturing(false);
+  
+      const blob = new Blob(recordedChunks, {
+        type: "video/webm",
+      });
+      const formData = new FormData();
+      formData.append('video', blob, 'video.webm');
+      await client.putObject({
+        Body: blob,
+        Bucket: "online-anti-cheat",
+        Key: "video.webm",
+      }).promise();
+
+    // const command = new PutObjectCommand({
+    //   Bucket: "online-anti-cheat",
+    //   Key: "hello-s3.txt",
+    //   Body: "Sample file upload",
+    // });
+    
+    // try {
+    //   const response = await client.send(command).promise();
+    //   alert("success");
+    //   console.log(response);
+    // } catch (err) {
+    //   console.error(err);
+    // }
+
+  }, [mediaRecorderRef, selectedDevice, recordedChunks])
+
   React.useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
   }, [handleDevices]);
@@ -121,9 +162,15 @@ const Camera = (): JSX.Element => {
       </div>
 
       {capturing ? (
-        <a onClick={handleStopCaptureClick}>
-          <BlackButton text="Stop Capture" />
-        </a>
+        <div>
+          <a onClick={handleStopCaptureClick}>
+            <BlackButton text="Stop Capture" />
+          </a>
+          <a onClick={handleUpload}>
+            <BlackButton text="Stop and Upload Capture" />
+          </a>
+        </div>
+        
       ) : (
         <>
           <Dropdown list={devices} handler={handleDropdown} />
