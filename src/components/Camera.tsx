@@ -92,27 +92,43 @@ const Camera = (): JSX.Element => {
   const [imgSrc, setImgSrc] = useState(null);
 
   const visionAPI = new CloudVision();
-  const screencaptureLabels: string[] = [];
+  const [sus, setSus] = useState<boolean>(false);
   const handleAnalyse = React.useCallback(async () => {
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
         const imageLabels = await visionAPI.analyseImage(imageSrc);
         labels = imageLabels;
+        console.log(imageLabels);
+        if(imageLabels.some(obj => obj.description === "Gadget")){
+          setSus(true);
+          alert("SUS DETECTED");
+        }else{
+          setSus(false);
+        }
       }
-
+      
       // setImgSrc(imageSrc);
     }
   }, [cameraRef]);
 
+  React.useEffect(() => {
+    const intervalId = setInterval(() => {
+      handleAnalyse();
+    }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [handleAnalyse]); 
+
   const AWS = require('aws-sdk');
   const config = {
-    accessKeyId: 'MyKey',
-    secretAccessKey: 'MyKey',
+    accessKeyId: 'APIKEYGOESHERE',
+    secretAccessKey: 'APIKEYGOESHERE',
     region: 'ap-southeast-2',
   }
   AWS.config.update(config);
-  //const tmpCred = new SessionAWSCredentials();
   const client = new AWS.S3({params : {Bucket: 'online-anti-cheat'}});
     const handleUpload = React.useCallback(async () => {
 
@@ -127,22 +143,9 @@ const Camera = (): JSX.Element => {
       await client.putObject({
         Body: blob,
         Bucket: "online-anti-cheat",
-        Key: "video.webm",
+        Key: "video33.webm",
+        //ContentType: "video/webm",
       }).promise();
-
-    // const command = new PutObjectCommand({
-    //   Bucket: "online-anti-cheat",
-    //   Key: "hello-s3.txt",
-    //   Body: "Sample file upload",
-    // });
-    
-    // try {
-    //   const response = await client.send(command).promise();
-    //   alert("success");
-    //   console.log(response);
-    // } catch (err) {
-    //   console.error(err);
-    // }
 
   }, [mediaRecorderRef, selectedDevice, recordedChunks])
 
@@ -188,9 +191,7 @@ const Camera = (): JSX.Element => {
       <a onClick={handleAnalyse}>
         <BlackButton text="Analyse Image" />
       </a>
-      {imgSrc && <img src={imgSrc} />}
-
-      {labels && <p>{labels[0]}</p>}
+      {sus && (<div><label>WARNING: Suspicious Activity Detected</label></div>)}
     </div>
   );
 };
