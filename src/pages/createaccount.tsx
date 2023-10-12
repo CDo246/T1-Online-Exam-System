@@ -36,6 +36,24 @@ export default function CreateAccount() {
 
   const createAccount = api.accounts.createAccount.useMutation();
 
+  async function enterForm() {
+    if (createAccountDisabled) return;
+    try {
+      console.log("Role is", role);
+      await createAccount.mutateAsync({
+        name: name,
+        email: email,
+        password: password,
+        role: role,
+      });
+      router.push(`/?created=${email}`);
+    } catch (e) {
+      if (e instanceof TRPCClientError) {
+        setCreateAccountError(e.message);
+      }
+    }
+  }
+
   return (
     <CentredLayout title="Create Account">
       <FormBox>
@@ -57,79 +75,67 @@ export default function CreateAccount() {
             </a>
           </div>
         )}
-        <InputField
-          name="Name"
-          type="text"
-          placeholder="Name"
-          value={name}
-          setValue={setName}
-          valid={nameValid}
-          setValid={setNameValid}
-          validation={Validation.NonEmpty}
-        />
-        <InputField
-          name="Email Address"
-          type="text"
-          placeholder="Email Address"
-          value={email}
-          setValue={setEmail}
-          valid={emailValid}
-          setValid={setEmailValid}
-          validation={Validation.Email}
-        />
-        <DropdownField
-          name="Role"
-          value={role}
-          values={["Student", "Examiner"]}
-          setValue={setRole}
-        />
-        <InputField
-          name="Password"
-          type="password"
-          placeholder="●●●●●●"
-          value={password}
-          setValue={setPassword}
-          valid={passwordValid}
-          setValid={setPasswordValid}
-          validation={Validation.Password}
-        />
-        <label>Confirm Password:</label>
-        <input
-          className={`rounded-xl border-2 focus:outline-none ${
-            secondPasswordValid ? "border-black" : "border-red-600"
-          } p-3`}
-          name="secondPassword"
-          type="password"
-          placeholder="●●●●●●"
-          value={secondPassword}
-          onChange={(e) => setSecondPassword(e.target.value)}
-        />
-        {!secondPasswordValid && (
-          <p className="text-red-600">Passwords must be matching</p>
-        )}
-        <hr className="min-w-[35vw]" />
-        <a
-          onClick={async () => {
-            if (createAccountDisabled) return;
-            try {
-              console.log("Role is", role);
-              await createAccount.mutateAsync({
-                name: name,
-                email: email,
-                password: password,
-                role: role,
-              });
-              //TODO: Create a 'verify your email' page, redirect to that instead
-              router.push(`/?created=${email}`);
-            } catch (e) {
-              if (e instanceof TRPCClientError) {
-                setCreateAccountError(e.message);
-              }
-            }
-          }}
-        >
-          <BlackButton text="Create Account" disabled={createAccountDisabled} />
-        </a>
+        <form className="grid grid-cols-1 gap-4" onSubmit={e => {
+          e.preventDefault();
+          enterForm();
+        }}>
+          <InputField
+            name="Name"
+            type="text"
+            placeholder="Name"
+            value={name}
+            setValue={setName}
+            valid={nameValid}
+            setValid={setNameValid}
+            validation={Validation.NonEmpty}
+          />
+          <InputField
+            name="Email Address"
+            type="text"
+            placeholder="Email Address"
+            value={email}
+            setValue={setEmail}
+            valid={emailValid}
+            setValid={setEmailValid}
+            validation={Validation.Email}
+          />
+          <DropdownField
+            name="Role"
+            value={role}
+            values={["Student", "Examiner"]}
+            setValue={setRole}
+          />
+          <InputField
+            name="Password"
+            type="password"
+            placeholder="●●●●●●"
+            value={password}
+            setValue={setPassword}
+            valid={passwordValid}
+            setValid={setPasswordValid}
+            validation={Validation.Password}
+          />
+          <label>Confirm Password:</label>
+          <input
+            className={`rounded-xl border-2 focus:outline-none ${
+              secondPasswordValid ? "border-black" : "border-red-600"
+            } p-3`}
+            name="secondPassword"
+            type="password"
+            placeholder="●●●●●●"
+            value={secondPassword}
+            onChange={(e) => setSecondPassword(e.target.value)}
+          />
+          {!secondPasswordValid && (
+            <p className="text-red-600">Passwords must be matching</p>
+          )}
+          <hr className="min-w-[35vw]" />
+          <a
+            onClick={() => enterForm()}
+          >
+            <BlackButton text="Create Account" disabled={createAccountDisabled} />
+          </a>
+        </form>
       </FormBox>
     </CentredLayout>
   );

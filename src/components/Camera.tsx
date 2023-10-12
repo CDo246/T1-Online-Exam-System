@@ -126,8 +126,8 @@ const Camera = (): JSX.Element => {
 
   //const AWS = require("aws-sdk");
   const config = {
-    accessKeyId: "APIKEYGOESHERE",
-    secretAccessKey: "APIKEYGOESHERE",
+    accessKeyId: "",
+    secretAccessKey: "",
     region: "ap-southeast-2",
   };
   AWS.config.update(config);

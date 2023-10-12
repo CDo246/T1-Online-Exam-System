@@ -103,7 +103,7 @@ export const examSessionRouter = createTRPCRouter({
           }
 
           const user = await ctx.prisma.user.findUnique({
-            where: { id: student.userId },
+            where: { id: student.userId ?? undefined },
           });
 
           if (!user) {
