@@ -5,6 +5,7 @@ import CloudVision from "./CloudVision";
 import { type } from "os";
 import { BlackButton } from "./button";
 import { DropdownField } from "./input";
+import AWS from "aws-sdk";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -123,7 +124,7 @@ const Camera = (): JSX.Element => {
     };
   }, [handleAnalyse]);
 
-  const AWS = require("aws-sdk");
+  //const AWS = require("aws-sdk");
   const config = {
     accessKeyId: "APIKEYGOESHERE",
     secretAccessKey: "APIKEYGOESHERE",
