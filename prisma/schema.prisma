@@ -47,7 +47,7 @@ model Student {
   id               String        @id @default(cuid())
   studentId        Int           @unique
   verificationCode Int           @default(0)
-  imageBase64        String?
+  imageBase64      String?
   userId           String?       @unique //UserID for identity verification
   user             User?         @relation(fields: [userId], references: [id])
   sessions         ExamSession[]
@@ -73,23 +73,24 @@ model CreatedSession {
 }
 
 model ExamSession {
-  sessionId          String         @id @default(cuid())
-  seatNumber         String
-  startTime          DateTime
-  endTime            DateTime?
-  faceImage          String? //String for capturing the user's face (and comparing to saved face)
-  deskAIApproved     Boolean        @default(false) //Do this if the user's desk has been approved by AI
-  deskImage          String? //String for capturing an image of the user's desk for manual review if not AI approved
-  suspiciousActivity Boolean        @default(false) // Field for tracking current suspicious activity
-  strikes            Int            @default(0)
-  manuallyFailed     Boolean        @default(false)
-  notifications      Notification[]
-  recordings         Recording[]
-  studentId          String
-  student            Student        @relation(fields: [studentId], references: [id])
-  uniqueCode         Int
-  examinerId         String
-  createdSession     CreatedSession @relation(fields: [uniqueCode, examinerId], references: [uniqueCode, examinerId])
+  sessionId            String         @id @default(cuid())
+  seatNumber           String
+  startTime            DateTime
+  endTime              DateTime?
+  faceImage            String? //String for capturing the user's face (and comparing to saved face)
+  deskAIApproved       Boolean        @default(false) //Do this if the user's desk has been approved by AI
+  deskImage            String? //String for capturing an image of the user's desk for manual review if not AI approved
+  deskManuallyApproved Boolean        @default(false)
+  suspiciousActivity   Boolean        @default(false) // Field for tracking current suspicious activity
+  strikes              Int            @default(0)
+  manuallyFailed       Boolean        @default(false)
+  notifications        Notification[]
+  recordings           Recording[]
+  studentId            String
+  student              Student        @relation(fields: [studentId], references: [id])
+  uniqueCode           Int
+  examinerId           String
+  createdSession       CreatedSession @relation(fields: [uniqueCode, examinerId], references: [uniqueCode, examinerId])
 }
 
 // Notification that is sent to examiner/admin (could contain `content` such as `student X is suspicious`)

@@ -226,4 +226,96 @@ export const studentRouter = createTRPCRouter({
 
       return updatedSession;
     }),
+
+  failStudentSession: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
+
+      // If session's suspiciousActivity is already false, you might want to handle it (optional)
+      if (session.manuallyFailed) {
+        throw new Error(`Session with id ${input.sessionId} is already failed`);
+      }
+
+      // Update the session to set suspiciousActivity to false
+      const updatedSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId,
+        },
+        data: {
+          manuallyFailed: true,
+        },
+      });
+      return updatedSession;
+    }),
+
+    unfailStudentSession: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
+
+      // If session's suspiciousActivity is already false, you might want to handle it (optional)
+      if (!session.manuallyFailed) {
+        throw new Error(`Session with id ${input.sessionId} is not failed`);
+      }
+
+      // Update the session to set suspiciousActivity to false
+      const updatedSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId,
+        },
+        data: {
+          manuallyFailed: false,
+        },
+      });
+      return updatedSession;
+    }),
+
+    setStrikes: publicProcedure
+    .input(z.object({ sessionId: z.string(), strikes: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
+
+      // Update the session to set suspiciousActivity to false
+      const updatedSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId,
+        },
+        data: {
+          strikes: input.strikes,
+        },
+      });
+
+      await ctx.prisma.notification.deleteMany({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      return updatedSession;
+    }),
 });

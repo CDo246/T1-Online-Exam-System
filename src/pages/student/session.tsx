@@ -9,11 +9,8 @@ export default function Session() {
     <SidebarLayout title="Session">
       <Sidebar>
         <div className="flex-1" />
-        <Link as="a" href="/">
-          <p className="text-gray-600">Verify Session</p>
-        </Link>
-        <Link href="/">
-          <p className="text-gray-600">Settings</p>
+        <Link href="/account">
+          <p className="text-gray-600">Leave Session</p>
         </Link>
       </Sidebar>
 
