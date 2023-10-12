@@ -41,6 +41,86 @@ export const studentRouter = createTRPCRouter({
       };
     }),
 
+  getStudentDetailsByEmail: publicProcedure
+    .input(z.object({ email: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          id: input.email,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with email ${input.email} not found`);
+      }
+
+      // Fetch the student with this userId
+      const student = await ctx.prisma.student.findUnique({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      if (!student) {
+        throw new Error(
+          `Student with id ${input.email} not found (this should never be thrown)`
+        );
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        studentId: student.studentId,
+      };
+    }),
+
+  getStudentSession: publicProcedure
+    .input(z.object({ email: z.string(), uniqueCode: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          email: input.email,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with email ${input.email} not found`);
+      }
+
+      const student = await ctx.prisma.student.findUnique({
+        where: {
+          userId: user.id
+        }
+      })
+
+      if (!student || student.studentId === null) {
+        throw new Error(`Student with id ${input.email} not found`);
+      }
+
+      // Fetch the student with this userId
+      console.log(student.userId)
+      console.log(input.uniqueCode)
+      const session = await ctx.prisma.examSession.findFirst({
+        where: {
+          AND : [
+            {
+              studentId: student.id ?? "",
+              uniqueCode: parseInt(input.uniqueCode),
+            }
+          ]
+        }
+      })
+
+      if (!session) {
+        throw new Error(
+          `No session found`
+        );
+      }
+
+      return session;
+    }),
+
   // Gets all examSessions for a student (past and current)
   // Once the sessionID's are known, we can post further queries to get any recordings related to those sessions.
   getStudentSessions: publicProcedure

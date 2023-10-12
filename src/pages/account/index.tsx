@@ -61,7 +61,7 @@ export default function Account({
         await createExamSession.mutateAsync({
           uniqueCode: Number(sessionCode),
         });
-        router.push("/student/session");
+        router.push(`/student/session?sessionCode=${sessionCode}`);
       } else {
         setInvalidSessionCode(true);
         console.error("Invalid session code");

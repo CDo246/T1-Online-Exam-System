@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
 import CloudVision from "./CloudVision";
@@ -6,6 +6,9 @@ import { type } from "os";
 import { BlackButton } from "./button";
 import { DropdownField } from "./input";
 import AWS from "aws-sdk";
+import { api } from "~/utils/api";
+import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -15,6 +18,25 @@ const Camera = (): JSX.Element => {
   const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
+  const router = useRouter();
+
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
+  const getStudentDetails = api.students.getStudentSession.useQuery({email: session ? (session.user.email ?? "") : "", uniqueCode: useSearchParams().get("sessionCode") ?? ""});
+  //const studentDetails = api.students.getStudentSession.useQuery({email: session ? (session.user.email ?? "") : "", uniqueCode: useSearchParams().get("sessionCode") ?? ""}) /* TODO: FIX */
+  //console.log(studentDetails.data)
+
+  useEffect(() => {
+    // Log initial examSessions
+    console.log(getStudentDetails.data);
+  }, [getStudentDetails.data])
+
+
 
   const handleDevices = React.useCallback(
     (mediaDevices: MediaDeviceInfo[]) => {
@@ -116,7 +138,7 @@ const Camera = (): JSX.Element => {
 
   React.useEffect(() => {
     const intervalId = setInterval(() => {
-      handleAnalyse();
+      //handleAnalyse(); TODO: Reenable
     }, 1000);
 
     return () => {

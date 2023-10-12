@@ -188,6 +188,7 @@ export default function Session() {
         </button>
 
         <p className="text-gray-600">Current Participants:</p>
+        {examSessions.map(session => <p>{session.name}</p>)}
 
         <div className="flex-1" />
 
