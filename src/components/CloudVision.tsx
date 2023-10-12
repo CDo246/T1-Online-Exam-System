@@ -16,7 +16,7 @@ class CloudVision {
     console.log("attempting to analyse screenshot");
     try {
       //Replace with Key
-      const apiKey = "";
+      const apiKey = "APIKEYGOESHERE";
       const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
       const base64Trimmed = base64ImageData.slice(23);
 
@@ -29,7 +29,7 @@ class CloudVision {
             features: [
               {
                 type: "LABEL_DETECTION",
-                maxResults: 5,
+                maxResults: 10,
               },
             ],
           },
