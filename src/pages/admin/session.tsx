@@ -23,6 +23,9 @@ type ExamSessionType = {
   image: string | null;
   manuallyFailed: boolean;
   strikes: number | null;
+  deskImage: string | null;
+  deskManuallyApproved: boolean;
+  liveFeedImage: string | null;
 };
 
 export default function Session() {
@@ -40,6 +43,11 @@ export default function Session() {
       uniqueCode: Number(sessionCode),
     }
   );
+
+  const [hiddenFaceIds, setHiddenFaceIds] = useState<string[]>([])
+
+  const approveDeskImage = api.examSessions.approveDeskImage.useMutation()
+  const removeDeskImage = api.examSessions.removeDeskImage.useMutation()
 
   const router = useRouter();
 
@@ -206,11 +214,23 @@ export default function Session() {
             >
               <div className="text-left grid grid-cols-1 gap-1">
                 {
-                  examSession.image ?
-                  <img src={examSession.image} className="object-scale-down h-50"/>
+                  examSession.image && !hiddenFaceIds.includes(examSession.studentId) ?
+                  <>
+                    <button
+                    onClick={() => setHiddenFaceIds([...hiddenFaceIds, examSession.studentId])} className="w-full">
+                      <BlackButton text="Hide Profile Pictures" />
+                    </button>
+                    <img src={examSession.image} className="object-scale-down h-50"/>
+                  </>
                   :
-                  <p>No Image</p>
+                  !hiddenFaceIds.includes(examSession.studentId) && <p>No Image</p>
+
                 }
+                {
+                  examSession.liveFeedImage &&
+                  <img src={examSession.liveFeedImage} className="object-scale-down h-50"/>
+                }
+
                 <p>Student Name: {examSession.name}</p>
                 <p>Student ID: {examSession.sID}</p>
                 {examSession.suspiciousActivity ? (    
@@ -226,21 +246,21 @@ export default function Session() {
                     <BlackButton text="Warn" />
                   </button>
                 )}
-                {examSession.manuallyFailed ? 
+                {examSession.manuallyFailed &&
                   (
                     <button
                       onClick={() => handleUnfail(examSession.sessionId)} className="w-full">
                       <WhiteButton text="Remove Fail" />
                     </button>
-                  )
-                  :
+                  )}
+                  {(examSession.strikes ?? 0) >= 2 && !examSession.manuallyFailed && 
                   (
                     <button
                       onClick={() => handleFail(examSession.sessionId)} className="w-full">
                       <BlackButton text="Fail" />
                     </button>
                   )
-                }
+                  }
                 
                 <div className="grid grid-cols-3 gap-1"> 
                   <p className="text-center">Strikes: {examSession.strikes}</p>
@@ -258,6 +278,24 @@ export default function Session() {
                     <BlackButton text="+" />
                   </button>
                 </div>
+
+                {examSession.deskImage && !examSession.deskManuallyApproved && (
+                  <>
+                    <img src={examSession.deskImage} className="object-scale-down h-50"/>
+                    <button
+                    onClick={async () => {
+                      approveDeskImage.mutateAsync({sessionId: examSession.sessionId})
+                    }} className="w-full">
+                      <BlackButton text="Approve Desk" />
+                    </button>
+                    <button
+                    onClick={async () => {
+                      removeDeskImage.mutateAsync({sessionId: examSession.sessionId})
+                    }} className="w-full">
+                      <BlackButton text="Disapprove Desk" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

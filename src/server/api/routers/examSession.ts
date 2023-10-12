@@ -121,4 +121,82 @@ export const examSessionRouter = createTRPCRouter({
 
       return { examSessions: modifiedExamSessions };
     }),
+
+    passAICheck: publicProcedure
+    .input(z.object({sessionId: z.string()}))
+    .mutation(async ({input, ctx}) => {
+      console.log(input.sessionId)
+      console.log("\n\n\n\n\n\n")
+      const examSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId
+        },
+        data: {
+          deskAIApproved: true
+        }
+      })
+      console.log(examSession)
+    }),
+
+    addDeskImage: publicProcedure
+    .input(z.object({sessionId: z.string(), deskImage: z.string()}))
+    .mutation(async ({input, ctx}) => {
+
+      const examSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId
+        },
+        data: {
+          deskImage: input.deskImage ?? ""
+        }
+      })
+      console.log(examSession)
+    }),
+
+    removeDeskImage: publicProcedure
+    .input(z.object({sessionId: z.string()}))
+    .mutation(async ({input, ctx}) => {
+
+      const examSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId
+        },
+        data: {
+          deskImage: null
+        }
+      })
+      console.log(examSession)
+    }),
+
+    approveDeskImage: publicProcedure
+    .input(z.object({sessionId: z.string()}))
+    .mutation(async ({input, ctx}) => {
+
+      const examSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId
+        },
+        data: {
+          deskManuallyApproved: true,
+        }
+      })
+      console.log(examSession)
+    }),
+
+    addLiveFeedImage: publicProcedure
+    .input(z.object({sessionId: z.string(), image: z.string()}))
+    .mutation(async ({input, ctx}) => {
+
+      const examSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId
+        },
+        data: {
+          liveFeedImage: input.image ?? ""
+        }
+      })
+      console.log(examSession)
+    }),
+
+    
 });

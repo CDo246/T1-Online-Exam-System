@@ -80,6 +80,7 @@ model ExamSession {
   faceImage            String? //String for capturing the user's face (and comparing to saved face)
   deskAIApproved       Boolean        @default(false) //Do this if the user's desk has been approved by AI
   deskImage            String? //String for capturing an image of the user's desk for manual review if not AI approved
+  liveFeedImage        String? //Yes, we're doing the live feed with ASCII-encoded images uploaded to an SQL database
   deskManuallyApproved Boolean        @default(false)
   suspiciousActivity   Boolean        @default(false) // Field for tracking current suspicious activity
   strikes              Int            @default(0)
