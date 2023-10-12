@@ -3,6 +3,7 @@ import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
 import CloudVision from "./CloudVision";
 import { type } from "os";
+//import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -103,6 +104,47 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
+  const AWS = require('aws-sdk');
+  const config = {
+    accessKeyId: 'MyKey',
+    secretAccessKey: 'MyKey',
+    region: 'ap-southeast-2',
+  }
+  AWS.config.update(config);
+  //const tmpCred = new SessionAWSCredentials();
+  const client = new AWS.S3({params : {Bucket: 'online-anti-cheat'}});
+    const handleUpload = React.useCallback(async () => {
+
+      mediaRecorderRef.current?.stop();
+      setCapturing(false);
+  
+      const blob = new Blob(recordedChunks, {
+        type: "video/webm",
+      });
+      const formData = new FormData();
+      formData.append('video', blob, 'video.webm');
+      await client.putObject({
+        Body: blob,
+        Bucket: "online-anti-cheat",
+        Key: "video.webm",
+      }).promise();
+
+    // const command = new PutObjectCommand({
+    //   Bucket: "online-anti-cheat",
+    //   Key: "hello-s3.txt",
+    //   Body: "Sample file upload",
+    // });
+    
+    // try {
+    //   const response = await client.send(command).promise();
+    //   alert("success");
+    //   console.log(response);
+    // } catch (err) {
+    //   console.error(err);
+    // }
+
+  }, [mediaRecorderRef, selectedDevice, recordedChunks])
+
   React.useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
   }, [handleDevices]);
@@ -115,7 +157,11 @@ const Camera = (): JSX.Element => {
         ref={cameraRef}
       />
       {capturing ? (
-        <button onClick={handleStopCaptureClick}> Stop Capture</button>
+        <div>
+          <button onClick={handleStopCaptureClick}> Stop Capture</button>
+          <button onClick={handleUpload}>Stop and Upload</button>
+        </div>
+        
       ) : (
         <div>
           <Dropdown list={devices} handler={handleDropdown} />
