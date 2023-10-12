@@ -1,11 +1,14 @@
 import { useState } from "react";
 import validator from "validator";
+import React from "react";
+import { UserRoles } from "~/utils/enums";
 
 export enum Validation {
   None = "None",
   NonEmpty = "NonEmpty",
   Email = "Email",
   Password = "Password",
+  Role = "Role",
 }
 
 interface InputConfig {
@@ -17,6 +20,13 @@ interface InputConfig {
   valid: boolean;
   setValid: React.Dispatch<React.SetStateAction<boolean>>;
   validation: Validation;
+}
+
+interface DropdownFieldProps {
+  name: string;
+  value: string;
+  values: string[]; // Define as an array of strings
+  setValue: React.Dispatch<React.SetStateAction<UserRoles>>;
 }
 
 function checkValidity(value: string, validation: Validation): boolean {
@@ -33,12 +43,18 @@ function checkValidity(value: string, validation: Validation): boolean {
 }
 
 function getInvalidReason(validation: Validation): string {
-  if (validation === Validation.NonEmpty) return "This field cannot be empty.";
-  else if (validation === Validation.Email)
-    return "This field must contain a valid email address.";
-  else if (validation === Validation.Password)
-    return "This field must contain a password at least 8 characters long, with 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol.";
-  return "This error is in error.";
+  switch (validation) {
+    case Validation.NonEmpty:
+      return "This field cannot be empty.";
+    case Validation.Email:
+      return "This field must contain a valid email address.";
+    case Validation.Password:
+      return "This field must contain a password at least 8 characters long, with 1 lowercase letter, 1 uppercase letter, 1 number, and 1 symbol.";
+    case Validation.Role:
+      return "Role must be selected.";
+    default:
+      return "This error is in error.";
+  }
 }
 
 export function InputField({
@@ -68,6 +84,29 @@ export function InputField({
         onChange={(e) => setValue(e.target.value)}
       />
       {!valid && <p className="text-red-600">{getInvalidReason(validation)}</p>}
+    </>
+  );
+}
+
+export function DropdownField(props: DropdownFieldProps) {
+  return (
+    <>
+      <label htmlFor={props.name} className="mb-1 block">
+        {props.name}:
+      </label>
+      <select
+        name={props.name}
+        id={props.name}
+        value={props.value}
+        onChange={(e) => props.setValue(e.target.value as UserRoles)} // Cast to UserRoles
+        className={`rounded-xl border-2 border-black p-3 focus:outline-none`}
+      >
+        {props.values.map((optionValue) => (
+          <option key={optionValue} value={optionValue}>
+            {optionValue}
+          </option>
+        ))}
+      </select>
     </>
   );
 }

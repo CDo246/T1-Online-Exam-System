@@ -54,9 +54,9 @@ export default function Home({
   };
 
   return (
-    <CentredLayout title="Exam Inviligation Website">
+    <CentredLayout title="Exam Invigilation Website">
       <p className="text-center text-5xl text-white">
-        Exam Inviligation System
+        Exam Invigilation System
       </p>
       <form
         onSubmit={(e) => {
@@ -83,12 +83,12 @@ export default function Home({
               <p className="text-white">
                 Sign In Error ({JSON.parse(loginError).errors})
               </p>
-              <a
+              <button
                 className="px-2 text-right text-white"
                 onClick={() => setLoginError(null)}
               >
                 X
-              </a>
+              </button>
             </div>
           )}
           <input name="csrfToken" type="hidden" defaultValue={csrfToken} />

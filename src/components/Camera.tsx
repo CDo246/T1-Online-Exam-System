@@ -3,7 +3,8 @@ import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
 import CloudVision from "./CloudVision";
 import { type } from "os";
-//import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { BlackButton } from "./button";
+import { DropdownField } from "./input";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -153,29 +154,41 @@ const Camera = (): JSX.Element => {
   }, [handleDevices]);
 
   return (
-    <div>
-      <Webcam
-        audio={false}
-        videoConstraints={{ deviceId: selectedDevice?.deviceId }}
-        ref={cameraRef}
-      />
+    <div className="flex max-h-full min-h-full flex-col gap-2 overflow-y-auto">
+      <div className="max-h-full flex-1 overflow-y-auto">
+        <Webcam
+          audio={false}
+          videoConstraints={{ deviceId: selectedDevice?.deviceId }}
+          ref={cameraRef}
+          className="max-h-[50vh] w-full object-contain"
+        />
+      </div>
+
       {capturing ? (
         <div>
-          <button onClick={handleStopCaptureClick}> Stop Capture</button>
-          <button onClick={handleUpload}>Stop and Upload</button>
-        </div>
-        
+          <a onClick={handleStopCaptureClick}>
+            <BlackButton text="Stop Capture" />
+          </a>
+          <a onClick={handleUpload}>
+            <BlackButton text="Stop and Upload Capture" />
+          </a>
+         </div>
       ) : (
-        <div>
+        <>
           <Dropdown list={devices} handler={handleDropdown} />
-          <button onClick={handleStartCaptureClick}>Start Capture</button>
-        </div>
+          <a onClick={handleStartCaptureClick}>
+            <BlackButton text="Start Capture" />
+          </a>
+        </>
       )}
       {recordedChunks.length > 0 && (
-        <button onClick={handleDownload}>Download</button>
+        <a onClick={handleDownload}>
+          <BlackButton text="Download" />
+        </a>
       )}
-
-      <button onClick={handleAnalyse}>Analyse image</button>
+      <a onClick={handleAnalyse}>
+        <BlackButton text="Analyse Image" />
+      </a>
       {sus && (<div><label>WARNING: Suspicious Activity Detected</label></div>)}
     </div>
   );
