@@ -78,6 +78,7 @@ export const studentRouter = createTRPCRouter({
   getStudentSession: publicProcedure
     .input(z.object({ email: z.string(), uniqueCode: z.string() }))
     .query(async ({ input, ctx }) => {
+      console.log("\n\n\n GETTING STUDENT SESSIOn")
       const user = await ctx.prisma.user.findUnique({
         where: {
           email: input.email,
@@ -118,6 +119,8 @@ export const studentRouter = createTRPCRouter({
         );
       }
 
+      console.log("Session Found:")
+      console.log(session)
       return session;
     }),
 
