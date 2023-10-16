@@ -5,16 +5,18 @@ import CloudVision from "./CloudVision";
 import { type } from "os";
 import { BlackButton } from "./button";
 import { DropdownField } from "./input";
+import { api } from "../utils/api";
 import AWS from "aws-sdk";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
-  const [selectedDevice, setSelectedDevice] =
-    React.useState<MediaDeviceInfo | null>(null);
+  const [selectedDevice, setSelectedDevice] = React.useState<MediaDeviceInfo | null>(null);
   const [capturing, setCapturing] = React.useState<boolean>(false);
   const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
+  const createSession = api.examSessions.updateSessionScreenshot.useMutation();
+
 
   const handleDevices = React.useCallback(
     (mediaDevices: MediaDeviceInfo[]) => {
@@ -114,6 +116,18 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
+  const captureAndSendScreenshot = async () => {
+    if (cameraRef.current) {
+      const screenshotData = cameraRef.current.getScreenshot();
+      if (screenshotData) {
+        await createSession.mutateAsync({
+          examSessionId: sessionStorage.getItem("examSessionId") ?? "", // This should be set when entering the exam session.
+          screenshot: screenshotData,
+        });
+      }
+    }
+  };
+
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       handleAnalyse();
@@ -123,6 +137,17 @@ const Camera = (): JSX.Element => {
       clearInterval(intervalId);
     };
   }, [handleAnalyse]);
+
+  // Screenshot every 10 seconds
+  React.useEffect(() => {
+    const intervalId = setInterval(() => {
+      captureAndSendScreenshot();
+    }, 10000); // 10 seconds
+
+    return () => {
+      clearInterval(intervalId);
+    };
+}, []);
 
   //const AWS = require("aws-sdk");
   const config = {

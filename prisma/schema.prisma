@@ -111,6 +111,7 @@ model ExamSession {
   uniqueCode         Int
   examinerId         String
   createdSession     CreatedSession @relation(fields: [uniqueCode, examinerId], references: [uniqueCode, examinerId])
+  currentScreenshot  Bytes          @default("")
 }
 
 // Notification that is sent to examiner/admin (could contain `content` such as `student X is suspicious`)

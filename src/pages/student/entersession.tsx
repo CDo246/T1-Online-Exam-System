@@ -25,9 +25,10 @@ export default function EnterSession({
       });
 
       if (isValid) {
-        await createExamSession.mutateAsync({
+        let result = await createExamSession.mutateAsync({
           uniqueCode: Number(sessionCode),
         });
+        sessionStorage.setItem("examSessionId", result.examSession.sessionId);
         router.push("/student/session");
       } else {
         console.error("Invalid session code");

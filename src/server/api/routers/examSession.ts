@@ -120,4 +120,25 @@ export const examSessionRouter = createTRPCRouter({
 
       return { examSessions: modifiedExamSessions };
     }),
+
+    updateSessionScreenshot: publicProcedure
+    .input(z.object({ examSessionId: z.string(), screenshot: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const examSession = await ctx.prisma.examSession.findUnique({
+        where: { sessionId: input.examSessionId },
+      });
+
+      if (!examSession) {
+        throw new Error('No exam session found with the provided sessionId.');
+      }
+
+      // Convert base64 string to actual byte data (Buffer in Node.js)
+      const screenshotBuffer = Buffer.from(input.screenshot, 'base64');
+
+      await ctx.prisma.examSession.update({
+        where: { sessionId: examSession.studentId },
+        data: { currentScreenshot: screenshotBuffer }
+      });
+    }),
+
 });
