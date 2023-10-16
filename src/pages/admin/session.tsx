@@ -194,7 +194,7 @@ export default function Session() {
 
         <p className="text-gray-600">Current Participants:</p>
         {examSessions.map((session) => (
-          <p>{session.name}</p>
+          <p key={session.name}>{session.name}</p>
         ))}
 
         <div className="flex-1" />
@@ -325,7 +325,7 @@ export default function Session() {
                       className="h-50 object-scale-down"
                     />
                     <button
-                      onClick={async () => {
+                      onClick={() => {
                         approveDeskImage.mutateAsync({
                           sessionId: examSession.sessionId,
                         });
@@ -335,7 +335,7 @@ export default function Session() {
                       <BlackButton text="Approve Desk" />
                     </button>
                     <button
-                      onClick={async () => {
+                      onClick={() => {
                         removeDeskImage.mutateAsync({
                           sessionId: examSession.sessionId,
                         });

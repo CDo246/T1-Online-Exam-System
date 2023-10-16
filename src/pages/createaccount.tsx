@@ -168,7 +168,7 @@ export default function CreateAccount() {
           {!secondPasswordValid && (
             <p className="text-red-600">Passwords must be matching</p>
           )}
-          {role === "Student" ? (
+          {role === UserRoles.Student ? (
             <>
               <InputField
                 name="Student ID"

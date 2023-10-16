@@ -121,7 +121,7 @@ export default function CreateStudent() {
             type="file"
             name="myFile"
             accept=".jpeg, .png, .jpg"
-            onChange={async (e) => {
+            onChange={(e) => {
               console.log("Image upload test");
               if (!e.target.files) return;
               const file = e.target.files[0];

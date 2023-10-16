@@ -95,7 +95,7 @@ export const studentRouter = createTRPCRouter({
         },
       });
 
-      if (!student || student.studentId === null) {
+      if (!student?.studentId) {
         throw new Error(`Student with id ${input.email} not found`);
       }
 
