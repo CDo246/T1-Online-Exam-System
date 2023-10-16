@@ -95,7 +95,7 @@ export default function Account({
           <>
             <hr />
             <Link href="/admin/createstudent" className="inline-block">
-                <BlackButton text="Add Students" />
+              <BlackButton text="Add Students" />
             </Link>
             <hr />
             {sessionCode ? (

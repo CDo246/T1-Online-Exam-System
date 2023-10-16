@@ -78,7 +78,7 @@ export const studentRouter = createTRPCRouter({
   getStudentSession: publicProcedure
     .input(z.object({ email: z.string(), uniqueCode: z.string() }))
     .query(async ({ input, ctx }) => {
-      console.log("\n\n\n GETTING STUDENT SESSIOn")
+      console.log("\n\n\n GETTING STUDENT SESSIOn");
       const user = await ctx.prisma.user.findUnique({
         where: {
           email: input.email,
@@ -91,36 +91,34 @@ export const studentRouter = createTRPCRouter({
 
       const student = await ctx.prisma.student.findUnique({
         where: {
-          userId: user.id
-        }
-      })
+          userId: user.id,
+        },
+      });
 
       if (!student || student.studentId === null) {
         throw new Error(`Student with id ${input.email} not found`);
       }
 
       // Fetch the student with this userId
-      console.log(student.userId)
-      console.log(input.uniqueCode)
+      console.log(student.userId);
+      console.log(input.uniqueCode);
       const session = await ctx.prisma.examSession.findFirst({
         where: {
-          AND : [
+          AND: [
             {
               studentId: student.id ?? "",
               uniqueCode: parseInt(input.uniqueCode),
-            }
-          ]
-        }
-      })
+            },
+          ],
+        },
+      });
 
       if (!session) {
-        throw new Error(
-          `No session found`
-        );
+        throw new Error(`No session found`);
       }
 
-      console.log("Session Found:")
-      console.log(session)
+      console.log("Session Found:");
+      console.log(session);
       return session;
     }),
 
@@ -340,7 +338,7 @@ export const studentRouter = createTRPCRouter({
       return updatedSession;
     }),
 
-    unfailStudentSession: publicProcedure
+  unfailStudentSession: publicProcedure
     .input(z.object({ sessionId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const session = await ctx.prisma.examSession.findUnique({
@@ -370,7 +368,7 @@ export const studentRouter = createTRPCRouter({
       return updatedSession;
     }),
 
-    setStrikes: publicProcedure
+  setStrikes: publicProcedure
     .input(z.object({ sessionId: z.string(), strikes: z.number() }))
     .mutation(async ({ input, ctx }) => {
       const session = await ctx.prisma.examSession.findUnique({

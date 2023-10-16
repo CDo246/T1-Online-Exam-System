@@ -72,13 +72,13 @@ export const sessionRouter = createTRPCRouter({
     }),
 
   getStudentSession: publicProcedure
-    .input(z.object({uniqueCode: z.string(), studentId: z.string()}))
-    .query(async ({input, ctx}) => {
+    .input(z.object({ uniqueCode: z.string(), studentId: z.string() }))
+    .query(async ({ input, ctx }) => {
       const examSession = await ctx.prisma.examSession.findFirst({
         where: {
           uniqueCode: parseInt(input.uniqueCode),
           studentId: input.studentId,
-        }
+        },
       });
       return examSession;
     }),

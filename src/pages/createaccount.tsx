@@ -30,11 +30,17 @@ export default function CreateAccount() {
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationCodeValid, setVerificationCodeValid] = useState(false);
   //Examiner-specific variables
-  const [examinerCode, setExaminerCode] = useState("")
-  const [examinerCodeValid, setExaminerCodeValid] = useState(false)
+  const [examinerCode, setExaminerCode] = useState("");
+  const [examinerCodeValid, setExaminerCodeValid] = useState(false);
 
   const disable =
-    !nameValid || !emailValid || !passwordValid || !secondPasswordValid || role === UserRoles.Student ? (!studentIdValid || !verificationCodeValid) : (!examinerCodeValid);
+    !nameValid ||
+    !emailValid ||
+    !passwordValid ||
+    !secondPasswordValid ||
+    role === UserRoles.Student
+      ? !studentIdValid || !verificationCodeValid
+      : !examinerCodeValid;
   if (createAccountDisabled !== disable) setCreateAccountDisabled(disable);
 
   useEffect(() => {
@@ -44,24 +50,23 @@ export default function CreateAccount() {
   }, [password, secondPassword]);
 
   const createStudentAccount = api.accounts.createStudentAccount.useMutation();
-  const createExaminerAccount = api.accounts.createExaminerAccount.useMutation();
+  const createExaminerAccount =
+    api.accounts.createExaminerAccount.useMutation();
 
   async function enterForm() {
     if (createAccountDisabled) return;
     try {
       console.log("Role is", role);
-      if(role === UserRoles.Student) {
+      if (role === UserRoles.Student) {
         await createStudentAccount.mutateAsync({
           name: name,
           email: email,
           password: password,
           studentId: parseInt(studentId),
           verificationCode: parseInt(verificationCode),
-          
         });
         router.push(`/?created=${email}`);
-      }
-      else {
+      } else {
         await createExaminerAccount.mutateAsync({
           name: name,
           email: email,
@@ -71,8 +76,7 @@ export default function CreateAccount() {
         router.push(`/?created=${email}`);
       }
 
-
-/*       await createAccount.mutateAsync({
+      /*       await createAccount.mutateAsync({
         name: name,
         email: email,
         password: password,
@@ -107,10 +111,13 @@ export default function CreateAccount() {
             </a>
           </div>
         )}
-        <form className="grid grid-cols-1 gap-4" onSubmit={e => {
-          e.preventDefault();
-          enterForm();
-        }}>
+        <form
+          className="grid grid-cols-1 gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            enterForm();
+          }}
+        >
           <DropdownField
             name="Role"
             value={role}
@@ -161,7 +168,7 @@ export default function CreateAccount() {
           {!secondPasswordValid && (
             <p className="text-red-600">Passwords must be matching</p>
           )}
-          {role === "Student" ?
+          {role === "Student" ? (
             <>
               <InputField
                 name="Student ID"
@@ -174,33 +181,34 @@ export default function CreateAccount() {
                 validation={Validation.NonEmpty}
               />
               <InputField
-                  name="Verification Code"
-                  type="number"
-                  placeholder="Verification Code"
-                  value={verificationCode}
-                  setValue={setVerificationCode}
-                  valid={verificationCodeValid}
-                  setValid={setVerificationCodeValid}
-                  validation={Validation.NonEmpty}
-              />
-            </>
-            :
-              <InputField
-                name="Examiner Code"
+                name="Verification Code"
                 type="number"
-                placeholder="Code to prove you're allowed to create an examiner account (Hint: 123)"
-                value={examinerCode}
-                setValue={setExaminerCode}
-                valid={examinerCodeValid}
-                setValid={setExaminerCodeValid}
+                placeholder="Verification Code"
+                value={verificationCode}
+                setValue={setVerificationCode}
+                valid={verificationCodeValid}
+                setValid={setVerificationCodeValid}
                 validation={Validation.NonEmpty}
               />
-          }
+            </>
+          ) : (
+            <InputField
+              name="Examiner Code"
+              type="number"
+              placeholder="Code to prove you're allowed to create an examiner account (Hint: 123)"
+              value={examinerCode}
+              setValue={setExaminerCode}
+              valid={examinerCodeValid}
+              setValid={setExaminerCodeValid}
+              validation={Validation.NonEmpty}
+            />
+          )}
           <hr className="min-w-[35vw]" />
-          <a
-            onClick={() => enterForm()}
-          >
-            <BlackButton text="Create Account" disabled={createAccountDisabled} />
+          <a onClick={() => enterForm()}>
+            <BlackButton
+              text="Create Account"
+              disabled={createAccountDisabled}
+            />
           </a>
         </form>
       </FormBox>

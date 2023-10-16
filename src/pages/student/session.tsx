@@ -17,13 +17,15 @@ export default function Session() {
     },
   });
 
-  const studentDetails = api.students.getStudentSession.useQuery({email: session ? (session.user.email ?? "") : "", uniqueCode: useSearchParams().get("sessionCode") ?? ""});
+  const studentDetails = api.students.getStudentSession.useQuery({
+    email: session ? session.user.email ?? "" : "",
+    uniqueCode: useSearchParams().get("sessionCode") ?? "",
+  });
 
   useEffect(() => {
     // Log initial examSessions
     console.log(studentDetails.data);
-  }, [studentDetails.data])
-
+  }, [studentDetails.data]);
 
   return (
     <SidebarLayout title="Session">
@@ -32,14 +34,36 @@ export default function Session() {
         {studentDetails.data && (
           <>
             <p>Session code: {studentDetails.data.uniqueCode}</p>
-            <p>{studentDetails.data.deskAIApproved ? "Desk Approved by AI." : "Desk not approved by AI."}</p>
-            <p>{studentDetails.data.deskImage ? "Desk image sent for approval." : "No desk image sent."}</p>
-            <p>{studentDetails.data.deskManuallyApproved ? "Desk manually approved." : "Desk not manually approved."}</p>
-            <hr/>
+            <p>
+              {studentDetails.data.deskAIApproved
+                ? "Desk Approved by AI."
+                : "Desk not approved by AI."}
+            </p>
+            <p>
+              {studentDetails.data.deskImage
+                ? "Desk image sent for approval."
+                : "No desk image sent."}
+            </p>
+            <p>
+              {studentDetails.data.deskManuallyApproved
+                ? "Desk manually approved."
+                : "Desk not manually approved."}
+            </p>
+            <hr />
             <p>Misconduct Information:</p>
-            <p className={studentDetails.data.strikes === 0 ? "" : "text-red-600"}   >Strikes: {studentDetails.data.strikes}</p>
-            {studentDetails.data.suspiciousActivity && <p className="text-red-600">SUSPICIOUS ACTIVITY FLAGGED</p>}
-            {studentDetails.data.manuallyFailed && <p className="text-red-600">FAILED BY EXAMINER</p>}
+            <p
+              className={
+                studentDetails.data.strikes === 0 ? "" : "text-red-600"
+              }
+            >
+              Strikes: {studentDetails.data.strikes}
+            </p>
+            {studentDetails.data.suspiciousActivity && (
+              <p className="text-red-600">SUSPICIOUS ACTIVITY FLAGGED</p>
+            )}
+            {studentDetails.data.manuallyFailed && (
+              <p className="text-red-600">FAILED BY EXAMINER</p>
+            )}
           </>
         )}
         <div className="flex-1" />
