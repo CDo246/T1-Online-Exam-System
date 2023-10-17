@@ -24,8 +24,23 @@ export default function CreateAccount() {
   const [secondPasswordValid, setSecondPaswordValid] = useState(false);
   const [createAccountDisabled, setCreateAccountDisabled] = useState(true);
 
+  //Student-specific variables
+  const [studentId, setStudentId] = useState("");
+  const [studentIdValid, setStudentIdValid] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationCodeValid, setVerificationCodeValid] = useState(false);
+  //Examiner-specific variables
+  const [examinerCode, setExaminerCode] = useState("");
+  const [examinerCodeValid, setExaminerCodeValid] = useState(false);
+
   const disable =
-    !nameValid || !emailValid || !passwordValid || !secondPasswordValid;
+    !nameValid ||
+    !emailValid ||
+    !passwordValid ||
+    !secondPasswordValid ||
+    role === UserRoles.Student
+      ? !studentIdValid || !verificationCodeValid
+      : !examinerCodeValid;
   if (createAccountDisabled !== disable) setCreateAccountDisabled(disable);
 
   useEffect(() => {
@@ -34,7 +49,46 @@ export default function CreateAccount() {
     else setSecondPaswordValid(false);
   }, [password, secondPassword]);
 
-  const createAccount = api.accounts.createAccount.useMutation();
+  const createStudentAccount = api.accounts.createStudentAccount.useMutation();
+  const createExaminerAccount =
+    api.accounts.createExaminerAccount.useMutation();
+
+  async function enterForm() {
+    if (createAccountDisabled) return;
+    try {
+      console.log("Role is", role);
+      if (role === UserRoles.Student) {
+        await createStudentAccount.mutateAsync({
+          name: name,
+          email: email,
+          password: password,
+          studentId: parseInt(studentId),
+          verificationCode: parseInt(verificationCode),
+        });
+        router.push(`/?created=${email}`);
+      } else {
+        await createExaminerAccount.mutateAsync({
+          name: name,
+          email: email,
+          password: password,
+          examinerCreationCode: parseInt(examinerCode),
+        });
+        router.push(`/?created=${email}`);
+      }
+
+      /*       await createAccount.mutateAsync({
+        name: name,
+        email: email,
+        password: password,
+        role: role,
+      }); */
+      router.push(`/?created=${email}`);
+    } catch (e) {
+      if (e instanceof TRPCClientError) {
+        setCreateAccountError(e.message);
+      }
+    }
+  }
 
   return (
     <CentredLayout title="Create Account">
@@ -57,79 +111,106 @@ export default function CreateAccount() {
             </a>
           </div>
         )}
-        <InputField
-          name="Name"
-          type="text"
-          placeholder="Name"
-          value={name}
-          setValue={setName}
-          valid={nameValid}
-          setValid={setNameValid}
-          validation={Validation.NonEmpty}
-        />
-        <InputField
-          name="Email Address"
-          type="text"
-          placeholder="Email Address"
-          value={email}
-          setValue={setEmail}
-          valid={emailValid}
-          setValid={setEmailValid}
-          validation={Validation.Email}
-        />
-        <DropdownField
-          name="Role"
-          value={role}
-          values={["Student", "Examiner"]}
-          setValue={setRole}
-        />
-        <InputField
-          name="Password"
-          type="password"
-          placeholder="●●●●●●"
-          value={password}
-          setValue={setPassword}
-          valid={passwordValid}
-          setValid={setPasswordValid}
-          validation={Validation.Password}
-        />
-        <label>Confirm Password:</label>
-        <input
-          className={`rounded-xl border-2 focus:outline-none ${
-            secondPasswordValid ? "border-black" : "border-red-600"
-          } p-3`}
-          name="secondPassword"
-          type="password"
-          placeholder="●●●●●●"
-          value={secondPassword}
-          onChange={(e) => setSecondPassword(e.target.value)}
-        />
-        {!secondPasswordValid && (
-          <p className="text-red-600">Passwords must be matching</p>
-        )}
-        <hr className="min-w-[35vw]" />
-        <a
-          onClick={async () => {
-            if (createAccountDisabled) return;
-            try {
-              console.log("Role is", role);
-              await createAccount.mutateAsync({
-                name: name,
-                email: email,
-                password: password,
-                role: role,
-              });
-              //TODO: Create a 'verify your email' page, redirect to that instead
-              router.push(`/?created=${email}`);
-            } catch (e) {
-              if (e instanceof TRPCClientError) {
-                setCreateAccountError(e.message);
-              }
-            }
+        <form
+          className="grid grid-cols-1 gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            enterForm();
           }}
         >
-          <BlackButton text="Create Account" disabled={createAccountDisabled} />
-        </a>
+          <DropdownField
+            name="Role"
+            value={role}
+            values={["Student", "Examiner"]}
+            setValue={setRole}
+          />
+          <InputField
+            name="Name"
+            type="text"
+            placeholder="Name"
+            value={name}
+            setValue={setName}
+            valid={nameValid}
+            setValid={setNameValid}
+            validation={Validation.NonEmpty}
+          />
+          <InputField
+            name="Email Address"
+            type="text"
+            placeholder="Email Address"
+            value={email}
+            setValue={setEmail}
+            valid={emailValid}
+            setValid={setEmailValid}
+            validation={Validation.Email}
+          />
+          <InputField
+            name="Password"
+            type="password"
+            placeholder="●●●●●●"
+            value={password}
+            setValue={setPassword}
+            valid={passwordValid}
+            setValid={setPasswordValid}
+            validation={Validation.Password}
+          />
+          <label>Confirm Password:</label>
+          <input
+            className={`rounded-xl border-2 focus:outline-none ${
+              secondPasswordValid ? "border-black" : "border-red-600"
+            } p-3`}
+            name="secondPassword"
+            type="password"
+            placeholder="●●●●●●"
+            value={secondPassword}
+            onChange={(e) => setSecondPassword(e.target.value)}
+          />
+          {!secondPasswordValid && (
+            <p className="text-red-600">Passwords must be matching</p>
+          )}
+          {role === UserRoles.Student ? (
+            <>
+              <InputField
+                name="Student ID"
+                type="number"
+                placeholder="Student Id"
+                value={studentId}
+                setValue={setStudentId}
+                valid={studentIdValid}
+                setValid={setStudentIdValid}
+                validation={Validation.NonEmpty}
+              />
+              <InputField
+                name="Verification Code"
+                type="number"
+                placeholder="Verification Code"
+                value={verificationCode}
+                setValue={setVerificationCode}
+                valid={verificationCodeValid}
+                setValid={setVerificationCodeValid}
+                validation={Validation.NonEmpty}
+              />
+            </>
+          ) : (
+            <InputField
+              name="Examiner Code"
+              type="number"
+              placeholder="Code to prove you're allowed to create an examiner account (Hint: 123)"
+              value={examinerCode}
+              setValue={setExaminerCode}
+              valid={examinerCodeValid}
+              setValid={setExaminerCodeValid}
+              validation={Validation.NonEmpty}
+            />
+          )}
+          <hr className="min-w-[35vw]" />
+          <a onClick={() => enterForm()}>
+            <BlackButton
+              text="Create Account"
+              disabled={createAccountDisabled}
+            />
+          </a>
+        </form>
       </FormBox>
     </CentredLayout>
   );

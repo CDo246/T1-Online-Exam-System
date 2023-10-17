@@ -71,6 +71,18 @@ export const sessionRouter = createTRPCRouter({
       return session;
     }),
 
+  getStudentSession: publicProcedure
+    .input(z.object({ uniqueCode: z.string(), studentId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const examSession = await ctx.prisma.examSession.findFirst({
+        where: {
+          uniqueCode: parseInt(input.uniqueCode),
+          studentId: input.studentId,
+        },
+      });
+      return examSession;
+    }),
+
   getSessions: publicProcedure.query(async ({ input, ctx }) => {
     const sessions = await ctx.prisma.createdSession.findMany();
     sessions.forEach((session) => {

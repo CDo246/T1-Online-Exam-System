@@ -16,7 +16,7 @@ class CloudVision {
     console.log("attempting to analyse screenshot");
     try {
       //Replace with Key
-      const apiKey = "APIKEYGOESHERE";
+      const apiKey = "";
       const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
       const base64Trimmed = base64ImageData.slice(23);
 

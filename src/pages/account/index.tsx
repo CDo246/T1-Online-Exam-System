@@ -40,7 +40,7 @@ export default function Account({
   const handleCreateSession = async () => {
     try {
       const response = await createSession.mutateAsync({
-        examinerEmail: session?.user.email ?? "",
+        examinerEmail: session?.user.email ?? "", //TODO: Fix this
       });
       localStorage.setItem("sessionCode", response.uniqueCode.toString());
       setSessionCode(response.uniqueCode.toString());
@@ -61,7 +61,7 @@ export default function Account({
         await createExamSession.mutateAsync({
           uniqueCode: Number(sessionCode),
         });
-        router.push("/student/session");
+        router.push(`/student/session?sessionCode=${sessionCode}`);
       } else {
         setInvalidSessionCode(true);
         console.error("Invalid session code");
@@ -93,6 +93,10 @@ export default function Account({
         </div>
         {privilegedRoles.includes((getRole.data?.role as UserRoles) ?? "") && (
           <>
+            <hr />
+            <Link href="/admin/createstudent" className="inline-block">
+              <BlackButton text="Add Students" />
+            </Link>
             <hr />
             {sessionCode ? (
               <Link href="/admin/session" className="inline-block">

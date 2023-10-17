@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { api } from "~/utils/api";
 import { TRPCClientError } from "@trpc/client";
+import { BlackButton, WhiteButton } from "~/components/button";
 
 // This is not the same as the prisma DB type, this is a custom type to collate data we want to get from the API.
 type ExamSessionType = {
@@ -19,6 +20,12 @@ type ExamSessionType = {
   studentId: string;
   uniqueCode: number;
   examinerId: string;
+  image: string | null;
+  manuallyFailed: boolean;
+  strikes: number | null;
+  deskImage: string | null;
+  deskManuallyApproved: boolean;
+  liveFeedImage: string | null;
 };
 
 export default function Session() {
@@ -28,13 +35,23 @@ export default function Session() {
   const endSession = api.sessions.endSession.useMutation();
   const flagExamSession = api.students.flagStudentSession.useMutation();
   const unflagExamSession = api.students.unflagStudentSession.useMutation();
+  const failExamSession = api.students.failStudentSession.useMutation();
+  const unfailExamSession = api.students.unfailStudentSession.useMutation();
+  const setExamSessionStrikes = api.students.setStrikes.useMutation();
   const getExamSessionsByCode = api.examSessions.getExamSessionsByCode.useQuery(
     {
       uniqueCode: Number(sessionCode),
     }
   );
 
+  const [hiddenFaceIds, setHiddenFaceIds] = useState<string[]>([]);
+
+  const approveDeskImage = api.examSessions.approveDeskImage.useMutation();
+  const removeDeskImage = api.examSessions.removeDeskImage.useMutation();
+
   const router = useRouter();
+
+  console.log(examSessions);
 
   useEffect(() => {
     if (getExamSessionsByCode.data) {
@@ -105,6 +122,54 @@ export default function Session() {
     }
   };
 
+  const handleFail = async (examSessionId: string) => {
+    try {
+      await failExamSession.mutateAsync({ sessionId: examSessionId });
+      console.log("Failed successfully");
+
+      setExamSessions(
+        examSessions.map((es) =>
+          es.sessionId === examSessionId ? { ...es, manuallyFailed: true } : es
+        )
+      );
+    } catch (error) {
+      console.error("Failed to fail:", error);
+    }
+  };
+
+  const handleUnfail = async (examSessionId: string) => {
+    try {
+      await unfailExamSession.mutateAsync({ sessionId: examSessionId });
+      console.log("UnFailed successfully");
+
+      setExamSessions(
+        examSessions.map((es) =>
+          es.sessionId === examSessionId ? { ...es, manuallyFailed: false } : es
+        )
+      );
+    } catch (error) {
+      console.error("Failed to unfail:", error);
+    }
+  };
+
+  const setStrikes = async (examSessionId: string, strikes: number) => {
+    try {
+      await setExamSessionStrikes.mutateAsync({
+        sessionId: examSessionId,
+        strikes: strikes,
+      });
+      console.log("Set Strikes successfully");
+
+      setExamSessions(
+        examSessions.map((es) =>
+          es.sessionId === examSessionId ? { ...es, strikes: strikes } : es
+        )
+      );
+    } catch (error) {
+      console.error("Failed to set strikes:", error);
+    }
+  };
+
   return (
     <SidebarLayout title="Session">
       <Sidebar>
@@ -126,18 +191,16 @@ export default function Session() {
         >
           End Session
         </button>
-        <Link href="/">
-          <p className="text-gray-600">Current Participants</p>
-        </Link>
-        <Link href="/">
-          <p className="text-gray-600">Queue</p>
-        </Link>
+
+        <p className="text-gray-600">Current Participants:</p>
+        {examSessions.map((session) => (
+          <p key={session.name}>{session.name}</p>
+        ))}
+
         <div className="flex-1" />
-        <Link href="/">
-          <p className="text-gray-600">Session Settings</p>
-        </Link>
-        <Link href="/">
-          <p className="text-gray-600">Setup</p>
+
+        <Link href="/account">
+          <p className="text-gray-600">Stop Monitoring</p>
         </Link>
       </Sidebar>
       <div className="items-center justify-center p-10">
@@ -145,31 +208,143 @@ export default function Session() {
           {examSessions.map((examSession, index) => (
             <div
               key={index}
-              className={`flex h-[200px] flex-col items-center justify-center rounded 
-            ${examSession.suspiciousActivity ? "bg-red-500" : "bg-white"}`}
+              className={`flex flex-col items-center justify-center rounded border-4 border-gray-700 p-4
+            ${
+              examSession.suspiciousActivity ||
+              examSession.manuallyFailed ||
+              (examSession.strikes ?? 0) >= 3
+                ? "bg-red-200"
+                : "bg-white"
+            }`}
             >
-              <div className="text-left">
-                <p>(Image Placeholder)</p>
-                <p>Name: {examSession.name}</p>
-                <p>sID: {examSession.sID}</p>
+              <div className="grid grid-cols-1 gap-1 text-left">
+                {examSession.image &&
+                !hiddenFaceIds.includes(examSession.studentId) ? (
+                  <>
+                    <button
+                      onClick={() =>
+                        setHiddenFaceIds([
+                          ...hiddenFaceIds,
+                          examSession.studentId,
+                        ])
+                      }
+                      className="w-full"
+                    >
+                      <BlackButton text="Hide Profile Pictures" />
+                    </button>
+                    <img
+                      src={examSession.image}
+                      className="h-50 object-scale-down"
+                    />
+                  </>
+                ) : (
+                  !hiddenFaceIds.includes(examSession.studentId) && (
+                    <p>No Image</p>
+                  )
+                )}
+                {examSession.liveFeedImage && (
+                  <img
+                    src={examSession.liveFeedImage}
+                    className="h-50 object-scale-down"
+                  />
+                )}
+
+                <p>Student Name: {examSession.name}</p>
+                <p>Student ID: {examSession.sID}</p>
                 {examSession.suspiciousActivity ? (
                   <button
                     onClick={() =>
                       handleUnflagSuspiciousActivity(examSession.sessionId)
                     }
-                    className="mt-2 rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600"
+                    className="w-full"
                   >
-                    Unflag
+                    <WhiteButton text="Remove Warning" />
                   </button>
                 ) : (
                   <button
                     onClick={() =>
                       handleFlagSuspiciousActivity(examSession.sessionId)
                     }
-                    className="mt-2 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                    className="w-full"
                   >
-                    Flag
+                    <BlackButton text="Warn" />
                   </button>
+                )}
+                {examSession.manuallyFailed && (
+                  <button
+                    onClick={() => handleUnfail(examSession.sessionId)}
+                    className="w-full"
+                  >
+                    <WhiteButton text="Remove Fail" />
+                  </button>
+                )}
+                {(examSession.strikes ?? 0) >= 2 &&
+                  !examSession.manuallyFailed && (
+                    <button
+                      onClick={() => handleFail(examSession.sessionId)}
+                      className="w-full"
+                    >
+                      <BlackButton text="Fail" />
+                    </button>
+                  )}
+
+                <div className="grid grid-cols-3 gap-1">
+                  <p className="text-center">Strikes: {examSession.strikes}</p>
+                  {examSession.strikes ?? 0 > 0 ? (
+                    <button
+                      onClick={() =>
+                        setStrikes(
+                          examSession.sessionId,
+                          (examSession.strikes ?? 1) - 1
+                        )
+                      }
+                      className="w-full"
+                    >
+                      <BlackButton text="-" />
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                  <button
+                    onClick={() =>
+                      setStrikes(
+                        examSession.sessionId,
+                        (examSession.strikes ?? 0) + 1
+                      )
+                    }
+                    className="w-full"
+                  >
+                    <BlackButton text="+" />
+                  </button>
+                </div>
+
+                {examSession.deskImage && !examSession.deskManuallyApproved && (
+                  <>
+                    <img
+                      src={examSession.deskImage}
+                      className="h-50 object-scale-down"
+                    />
+                    <button
+                      onClick={() => {
+                        approveDeskImage.mutateAsync({
+                          sessionId: examSession.sessionId,
+                        });
+                      }}
+                      className="w-full"
+                    >
+                      <BlackButton text="Approve Desk" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        removeDeskImage.mutateAsync({
+                          sessionId: examSession.sessionId,
+                        });
+                      }}
+                      className="w-full"
+                    >
+                      <BlackButton text="Disapprove Desk" />
+                    </button>
+                  </>
                 )}
               </div>
             </div>

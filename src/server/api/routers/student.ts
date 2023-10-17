@@ -41,6 +41,87 @@ export const studentRouter = createTRPCRouter({
       };
     }),
 
+  getStudentDetailsByEmail: publicProcedure
+    .input(z.object({ email: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          id: input.email,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with email ${input.email} not found`);
+      }
+
+      // Fetch the student with this userId
+      const student = await ctx.prisma.student.findUnique({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      if (!student) {
+        throw new Error(
+          `Student with id ${input.email} not found (this should never be thrown)`
+        );
+      }
+
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        studentId: student.studentId,
+      };
+    }),
+
+  getStudentSession: publicProcedure
+    .input(z.object({ email: z.string(), uniqueCode: z.string() }))
+    .query(async ({ input, ctx }) => {
+      console.log("\n\n\n GETTING STUDENT SESSIOn");
+      const user = await ctx.prisma.user.findUnique({
+        where: {
+          email: input.email,
+        },
+      });
+
+      if (!user) {
+        throw new Error(`User with email ${input.email} not found`);
+      }
+
+      const student = await ctx.prisma.student.findUnique({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      if (!student?.studentId) {
+        throw new Error(`Student with id ${input.email} not found`);
+      }
+
+      // Fetch the student with this userId
+      console.log(student.userId);
+      console.log(input.uniqueCode);
+      const session = await ctx.prisma.examSession.findFirst({
+        where: {
+          AND: [
+            {
+              studentId: student.id ?? "",
+              uniqueCode: parseInt(input.uniqueCode),
+            },
+          ],
+        },
+      });
+
+      if (!session) {
+        throw new Error(`No session found`);
+      }
+
+      console.log("Session Found:");
+      console.log(session);
+      return session;
+    }),
+
   // Gets all examSessions for a student (past and current)
   // Once the sessionID's are known, we can post further queries to get any recordings related to those sessions.
   getStudentSessions: publicProcedure
@@ -136,7 +217,7 @@ export const studentRouter = createTRPCRouter({
 
       const user = await ctx.prisma.user.findUnique({
         where: {
-          id: student.userId,
+          id: student.userId ?? undefined,
         },
       });
 
@@ -215,6 +296,98 @@ export const studentRouter = createTRPCRouter({
         },
         data: {
           suspiciousActivity: false,
+        },
+      });
+
+      await ctx.prisma.notification.deleteMany({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      return updatedSession;
+    }),
+
+  failStudentSession: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
+
+      // If session's suspiciousActivity is already false, you might want to handle it (optional)
+      if (session.manuallyFailed) {
+        throw new Error(`Session with id ${input.sessionId} is already failed`);
+      }
+
+      // Update the session to set suspiciousActivity to false
+      const updatedSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId,
+        },
+        data: {
+          manuallyFailed: true,
+        },
+      });
+      return updatedSession;
+    }),
+
+  unfailStudentSession: publicProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
+
+      // If session's suspiciousActivity is already false, you might want to handle it (optional)
+      if (!session.manuallyFailed) {
+        throw new Error(`Session with id ${input.sessionId} is not failed`);
+      }
+
+      // Update the session to set suspiciousActivity to false
+      const updatedSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId,
+        },
+        data: {
+          manuallyFailed: false,
+        },
+      });
+      return updatedSession;
+    }),
+
+  setStrikes: publicProcedure
+    .input(z.object({ sessionId: z.string(), strikes: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      const session = await ctx.prisma.examSession.findUnique({
+        where: {
+          sessionId: input.sessionId,
+        },
+      });
+
+      if (!session) {
+        throw new Error(`Session with id ${input.sessionId} not found`);
+      }
+
+      // Update the session to set suspiciousActivity to false
+      const updatedSession = await ctx.prisma.examSession.update({
+        where: {
+          sessionId: input.sessionId,
+        },
+        data: {
+          strikes: input.strikes,
         },
       });
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
 import CloudVision from "./CloudVision";
@@ -6,6 +6,9 @@ import { type } from "os";
 import { BlackButton } from "./button";
 import { DropdownField } from "./input";
 import AWS from "aws-sdk";
+import { api } from "~/utils/api";
+import { useSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -15,6 +18,27 @@ const Camera = (): JSX.Element => {
   const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
+  const router = useRouter();
+
+  const { data: session, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/");
+    },
+  });
+
+  const studentDetails = api.students.getStudentSession.useQuery({
+    email: session ? session.user.email ?? "" : "",
+    uniqueCode: useSearchParams().get("sessionCode") ?? "",
+  });
+  const passAICheck = api.examSessions.passAICheck.useMutation();
+  const addDeskImage = api.examSessions.addDeskImage.useMutation();
+  const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
+
+  useEffect(() => {
+    // Log initial examSessions
+    console.log(studentDetails.data);
+  }, [studentDetails.data]);
 
   const handleDevices = React.useCallback(
     (mediaDevices: MediaDeviceInfo[]) => {
@@ -114,10 +138,68 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
+  const handleFirstCheck = React.useCallback(async () => {
+    if (cameraRef.current) {
+      const imageSrc = cameraRef.current.getScreenshot();
+      if (imageSrc != null) {
+        const imageLabels = await visionAPI.analyseImage(imageSrc);
+        labels = imageLabels;
+        console.log(imageLabels);
+
+        if (
+          imageLabels.some((obj: any) => obj.description === "Gadget") ||
+          imageLabels.some((obj: any) => obj.description === "Mobile phone") ||
+          imageLabels.some(
+            (obj: any) => obj.description === "Tablet computer"
+          ) ||
+          imageLabels.some(
+            (obj: any) => obj.description === "Communication Device"
+          ) ||
+          imageLabels.some(
+            (obj: any) =>
+              obj.description === "Mobile device" ||
+              imageLabels.some((obj: any) => obj.description === "Mobile phone")
+          ) ||
+          !studentDetails.data
+        ) {
+          console.log("AI Failed");
+          alert("AI check failed. Try again, or request manual approval.");
+        } else {
+          console.log("AI Passed");
+          await passAICheck.mutateAsync({
+            sessionId: studentDetails.data.sessionId,
+          });
+          console.log("Mutated");
+        }
+      }
+
+      // setImgSrc(imageSrc);
+    }
+  }, [cameraRef]);
+
   React.useEffect(() => {
     const intervalId = setInterval(() => {
-      handleAnalyse();
+      //handleAnalyse(); TODO: Reenable
     }, 1000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [handleAnalyse]);
+
+  React.useEffect(() => {
+    const intervalId = setInterval(() => {
+      console.log("Live feed image consolelog");
+      if (!cameraRef.current || !studentDetails.data) return;
+      const imageSrc = cameraRef.current.getScreenshot();
+      console.log(imageSrc);
+      addLiveFeedImage
+        .mutateAsync({
+          sessionId: studentDetails.data.sessionId,
+          image: imageSrc ?? "",
+        })
+        .then((res) => console.log(res));
+    }, 7500);
 
     return () => {
       clearInterval(intervalId);
@@ -126,8 +208,8 @@ const Camera = (): JSX.Element => {
 
   //const AWS = require("aws-sdk");
   const config = {
-    accessKeyId: "APIKEYGOESHERE",
-    secretAccessKey: "APIKEYGOESHERE",
+    accessKeyId: "",
+    secretAccessKey: "",
     region: "ap-southeast-2",
   };
   AWS.config.update(config);
@@ -188,8 +270,22 @@ const Camera = (): JSX.Element => {
           <BlackButton text="Download" />
         </a>
       )}
-      <a onClick={handleAnalyse}>
-        <BlackButton text="Analyse Image" />
+      <a onClick={handleFirstCheck}>
+        <BlackButton text="Analyse Image For AI Approval" />
+      </a>
+      <a
+        onClick={async () => {
+          console.log("TODO");
+          if (!cameraRef.current || !studentDetails.data) return;
+          const imageSrc = cameraRef.current.getScreenshot();
+          console.log(imageSrc);
+          await addDeskImage.mutateAsync({
+            sessionId: studentDetails.data.sessionId,
+            deskImage: imageSrc ?? "",
+          });
+        }}
+      >
+        <BlackButton text="Request Manual Approval" />
       </a>
       {sus && (
         <div>

@@ -20,24 +20,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? // @db.Text
-  access_token      String? // @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? // @db.Text
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -54,29 +36,21 @@ model User {
   verificationCode String
   password         String
   passwordSalt     String
-  accounts         Account[]
   sessions         Session[]
-  role             String // 'examiner', 'student', 'admin'
-  student          Student?
-  examiner         Examiner?
-}
+  role             String // 'examiner', 'student', 'admin' TODO: Delete
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+  student  Student?
+  examiner Examiner?
 }
 
 model Student {
-  id        String        @id @default(cuid())
-  studentId Int           @unique
-  userId    String        @unique
-  // imageId   Int
-  // picture   Image         @relation(fields: [imageId], references: [id])
-  user      User          @relation(fields: [userId], references: [id])
-  sessions  ExamSession[]
+  id               String        @id @default(cuid())
+  studentId        Int           @unique
+  verificationCode Int           @default(0)
+  imageBase64      String?
+  userId           String?       @unique //UserID for identity verification
+  user             User?         @relation(fields: [userId], references: [id])
+  sessions         ExamSession[]
 }
 
 model Examiner {
@@ -99,18 +73,25 @@ model CreatedSession {
 }
 
 model ExamSession {
-  sessionId          String         @id @default(cuid())
-  seatNumber         String
-  startTime          DateTime
-  endTime            DateTime?
-  suspiciousActivity Boolean        @default(false) // Field for tracking suspicious activity
-  notifications      Notification[]
-  recordings         Recording[]
-  studentId          String
-  student            Student        @relation(fields: [studentId], references: [id])
-  uniqueCode         Int
-  examinerId         String
-  createdSession     CreatedSession @relation(fields: [uniqueCode, examinerId], references: [uniqueCode, examinerId])
+  sessionId            String         @id @default(cuid())
+  seatNumber           String
+  startTime            DateTime
+  endTime              DateTime?
+  faceImage            String? //String for capturing the user's face (and comparing to saved face)
+  deskAIApproved       Boolean        @default(false) //Do this if the user's desk has been approved by AI
+  deskImage            String? //String for capturing an image of the user's desk for manual review if not AI approved
+  liveFeedImage        String? //Yes, we're doing the live feed with ASCII-encoded images uploaded to an SQL database
+  deskManuallyApproved Boolean        @default(false)
+  suspiciousActivity   Boolean        @default(false) // Field for tracking current suspicious activity
+  strikes              Int            @default(0)
+  manuallyFailed       Boolean        @default(false)
+  notifications        Notification[]
+  recordings           Recording[]
+  studentId            String
+  student              Student        @relation(fields: [studentId], references: [id])
+  uniqueCode           Int
+  examinerId           String
+  createdSession       CreatedSession @relation(fields: [uniqueCode, examinerId], references: [uniqueCode, examinerId])
 }
 
 // Notification that is sent to examiner/admin (could contain `content` such as `student X is suspicious`)
