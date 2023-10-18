@@ -67,7 +67,17 @@ export const sessionRouter = createTRPCRouter({
         },
       });
 
-      console.log("Session invalidated");
+      // End all associated examSessions
+      await ctx.prisma.examSession.updateMany({
+        where: {
+          uniqueCode: Number(input.uniqueCode),
+        },
+        data: {
+          endTime: new Date(), // setting endTime to the current date and time
+        },
+      });
+
+      console.log("Session invalidated and associated examSessions ended");
       return session;
     }),
 

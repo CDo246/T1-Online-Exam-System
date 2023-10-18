@@ -25,6 +25,11 @@ export default function Session() {
   useEffect(() => {
     // Log initial examSessions
     console.log(studentDetails.data);
+
+    // Check if the session is still valid (hasn't ended)
+    if (studentDetails.data?.endTime != null) {
+      router.push("/account");
+    }
   }, [studentDetails.data]);
 
   return (

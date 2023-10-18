@@ -242,13 +242,18 @@ export default function Session() {
                     <p>No Image</p>
                   )
                 )}
-                {examSession.liveFeedImage && (
-                  <img
-                    src={examSession.liveFeedImage}
-                    className="h-50 object-scale-down"
-                  />
+                {examSession.liveFeedImage ? (
+                  examSession.liveFeedImage.trim() !== "" ? (
+                    <img
+                      src={examSession.liveFeedImage}
+                      className="h-50 object-scale-down"
+                    />
+                  ) : (
+                    <p>No webcam connected</p>
+                  )
+                ) : (
+                  <p>No webcam connected</p>
                 )}
-
                 <p>Student Name: {examSession.name}</p>
                 <p>Student ID: {examSession.sID}</p>
                 {examSession.suspiciousActivity ? (
