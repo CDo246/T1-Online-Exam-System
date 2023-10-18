@@ -69,21 +69,24 @@ export const examSessionRouter = createTRPCRouter({
       const existingExamSessions = await ctx.prisma.examSession.findMany({
         where: {
           uniqueCode: input.uniqueCode,
-          studentId: student.id
+          studentId: student.id,
         },
       });
-      
+
       if (existingExamSessions.length > 0) {
-        console.log("Re-entering existing exam session", existingExamSessions[0])
-      
+        console.log(
+          "Re-entering existing exam session",
+          existingExamSessions[0]
+        );
+
         // Delete any other instances (incase any exist)
         for (let i = 1; i < existingExamSessions.length; i++) {
           const examSession = existingExamSessions[i];
           if (examSession) {
             await ctx.prisma.examSession.delete({
               where: {
-                sessionId: examSession.sessionId
-              }
+                sessionId: examSession.sessionId,
+              },
             });
           }
         }

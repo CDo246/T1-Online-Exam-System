@@ -55,7 +55,7 @@ export const sessionRouter = createTRPCRouter({
       return { uniqueCode: createdSession.uniqueCode };
     }),
 
-    endSession: publicProcedure
+  endSession: publicProcedure
     .input(z.object({ uniqueCode: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const session = await ctx.prisma.createdSession.update({
@@ -66,7 +66,7 @@ export const sessionRouter = createTRPCRouter({
           valid: false,
         },
       });
-  
+
       // End all associated examSessions
       await ctx.prisma.examSession.updateMany({
         where: {
@@ -76,11 +76,10 @@ export const sessionRouter = createTRPCRouter({
           endTime: new Date(), // setting endTime to the current date and time
         },
       });
-  
+
       console.log("Session invalidated and associated examSessions ended");
       return session;
     }),
-  
 
   getStudentSession: publicProcedure
     .input(z.object({ uniqueCode: z.string(), studentId: z.string() }))

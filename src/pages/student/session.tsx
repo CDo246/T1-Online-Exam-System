@@ -28,7 +28,7 @@ export default function Session() {
 
     // Check if the session is still valid (hasn't ended)
     if (studentDetails.data?.endTime != null) {
-      router.push("/account")
+      router.push("/account");
     }
   }, [studentDetails.data]);
 
