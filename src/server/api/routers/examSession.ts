@@ -65,6 +65,31 @@ export const examSessionRouter = createTRPCRouter({
         );
       }
 
+      // Check if an ExamSession instance already exists for this createdSession and student (we only want 1 instance max)
+      const existingExamSessions = await ctx.prisma.examSession.findMany({
+        where: {
+          uniqueCode: input.uniqueCode,
+          studentId: student.id
+        },
+      });
+      
+      if (existingExamSessions.length > 0) {
+        console.log("Re-entering existing exam session", existingExamSessions[0])
+      
+        // Delete any other instances (incase any exist)
+        for (let i = 1; i < existingExamSessions.length; i++) {
+          const examSession = existingExamSessions[i];
+          if (examSession) {
+            await ctx.prisma.examSession.delete({
+              where: {
+                sessionId: examSession.sessionId
+              }
+            });
+          }
+        }
+        return { existingExamSession: existingExamSessions[0] }; // Return only the first session
+      }
+
       // Create new ExamSession instance
       const examSession = await ctx.prisma.examSession.create({
         data: {
