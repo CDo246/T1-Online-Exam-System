@@ -107,7 +107,7 @@ export const studentRouter = createTRPCRouter({
           AND: [
             {
               studentId: student.id ?? "",
-              uniqueCode: parseInt(input.uniqueCode),
+              uniqueCode: input.uniqueCode,
             },
           ],
         },

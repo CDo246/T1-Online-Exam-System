@@ -62,8 +62,8 @@ export default function CreateAccount() {
           name: name,
           email: email,
           password: password,
-          studentId: parseInt(studentId),
-          verificationCode: parseInt(verificationCode),
+          studentId: studentId,
+          verificationCode: verificationCode,
         });
         router.push(`/?created=${email}`);
       } else {

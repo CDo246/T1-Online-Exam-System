@@ -59,7 +59,7 @@ export default function Account({
 
       if (isValid) {
         await createExamSession.mutateAsync({
-          uniqueCode: Number(sessionCode),
+          uniqueCode: sessionCode,
         });
         router.push(`/student/session?sessionCode=${sessionCode}`);
       } else {

@@ -114,7 +114,7 @@ export const examSessionRouter = createTRPCRouter({
     }),
 
   getExamSessionsByCode: publicProcedure
-    .input(z.object({ uniqueCode: z.number() }))
+    .input(z.object({ uniqueCode: z.string() }))
     .query(async ({ input, ctx }) => {
       const examSessions = await ctx.prisma.examSession.findMany({
         where: { uniqueCode: input.uniqueCode },

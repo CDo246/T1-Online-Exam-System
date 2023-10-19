@@ -29,7 +29,7 @@ type ExamSessionType = {
 };
 
 export default function Session() {
-  const [sessionCode, setSessionCode] = useState<string | null>("");
+  const [sessionCode, setSessionCode] = useState<string>("");
   const [flaggedSessions, setFlaggedSessions] = useState<string[]>([]);
   const [examSessions, setExamSessions] = useState<ExamSessionType[]>([]);
   const endSession = api.sessions.endSession.useMutation();
@@ -40,7 +40,7 @@ export default function Session() {
   const setExamSessionStrikes = api.students.setStrikes.useMutation();
   const getExamSessionsByCode = api.examSessions.getExamSessionsByCode.useQuery(
     {
-      uniqueCode: Number(sessionCode),
+      uniqueCode: sessionCode,
     }
   );
 
@@ -83,7 +83,7 @@ export default function Session() {
       }
     } finally {
       localStorage.removeItem("sessionCode");
-      setSessionCode(null);
+      setSessionCode("");
       router.push("/account");
     }
   };

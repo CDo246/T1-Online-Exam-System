@@ -33,8 +33,8 @@ export default function CreateStudent() {
     if (createStudentDisabled) return;
     try {
       await createStudent.mutateAsync({
-        studentId: parseInt(studentId),
-        verificationCode: parseInt(verificationCode),
+        studentId: studentId,
+        verificationCode: verificationCode,
         imageBase64: image,
       });
       setImageName("");

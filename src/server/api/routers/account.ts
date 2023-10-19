@@ -8,6 +8,7 @@ import {
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
+import { generateUniqueCode } from "~/utils/ids";
 
 export const accountRouter = createTRPCRouter({
   createStudent: publicProcedure
@@ -196,7 +197,7 @@ export const accountRouter = createTRPCRouter({
       console.log("creating examiner account");
       const examiner = await ctx.prisma.examiner.create({
         data: {
-          examinerId: Math.floor(Math.random() * 10000000),
+          examinerId: generateUniqueCode(7),
           userId: user.id,
         },
       });
