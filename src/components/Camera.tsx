@@ -35,6 +35,9 @@ const Camera = (): JSX.Element => {
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
 
+  //TODO: AWS/Google Query UseQueries
+  const analyseImage = api.externalAPIs.analyseImage.useMutation()
+
   useEffect(() => {
     // Log initial examSessions
     console.log(studentDetails.data);
@@ -128,7 +131,7 @@ const Camera = (): JSX.Element => {
         if (imageLabels.some((obj) => obj === "Gadget")) {
           //This was obj.division ===... but this was throwing an error
           setSus(true);
-          alert("SUS DETECTED");
+          alert("Suspicious Activity Detected");
         } else {
           setSus(false);
         }
@@ -142,6 +145,9 @@ const Camera = (): JSX.Element => {
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
+        await analyseImage.mutateAsync({ //TODO: Complete
+          base64ImageData: imageSrc
+        })
         const imageLabels = await visionAPI.analyseImage(imageSrc);
         labels = imageLabels;
         console.log(imageLabels);
@@ -271,7 +277,6 @@ const Camera = (): JSX.Element => {
       </a>
       <a
         onClick={async () => {
-          console.log("TODO");
           if (!cameraRef.current || !studentDetails.data) return;
           const imageSrc = cameraRef.current.getScreenshot();
           console.log(imageSrc);
@@ -283,11 +288,6 @@ const Camera = (): JSX.Element => {
       >
         <BlackButton text="Request Manual Approval" />
       </a>
-      {sus && (
-        <div>
-          <label>WARNING: Suspicious Activity Detected</label>
-        </div>
-      )}
     </div>
   );
 };
