@@ -13,8 +13,8 @@ export const accountRouter = createTRPCRouter({
   createStudent: publicProcedure
     .input(
       z.object({
-        studentId: z.number(),
-        verificationCode: z.number(),
+        studentId: z.string(),
+        verificationCode: z.string(),
         imageBase64: z.string(),
       })
     )
@@ -60,8 +60,8 @@ export const accountRouter = createTRPCRouter({
         name: z.string(),
         email: z.string(),
         password: z.string(),
-        studentId: z.number(),
-        verificationCode: z.number(),
+        studentId: z.string(),
+        verificationCode: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {

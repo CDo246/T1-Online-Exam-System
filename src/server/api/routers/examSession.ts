@@ -7,7 +7,7 @@ import {
 
 export const examSessionRouter = createTRPCRouter({
   createExamSession: publicProcedure
-    .input(z.object({ uniqueCode: z.number() }))
+    .input(z.object({ uniqueCode: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const userEmail = ctx.session?.user.email;
 
