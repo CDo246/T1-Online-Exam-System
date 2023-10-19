@@ -4,10 +4,7 @@ import {
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-
-function generateUniqueCode() {
-  return Math.floor(100000 + Math.random() * 900000);
-}
+import { generateUniqueCode } from "~/utils/ids";
 
 export const sessionRouter = createTRPCRouter({
   createSession: publicProcedure
@@ -25,7 +22,7 @@ export const sessionRouter = createTRPCRouter({
 
       let uniqueCode;
       do {
-        uniqueCode = generateUniqueCode();
+        uniqueCode = generateUniqueCode(6);
       } while (
         await ctx.prisma.createdSession.findUnique({
           where: {
@@ -60,7 +57,7 @@ export const sessionRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const session = await ctx.prisma.createdSession.update({
         where: {
-          uniqueCode: Number(input.uniqueCode),
+          uniqueCode: input.uniqueCode,
         },
         data: {
           valid: false,
@@ -70,7 +67,7 @@ export const sessionRouter = createTRPCRouter({
       // End all associated examSessions
       await ctx.prisma.examSession.updateMany({
         where: {
-          uniqueCode: Number(input.uniqueCode),
+          uniqueCode: input.uniqueCode,
         },
         data: {
           endTime: new Date(), // setting endTime to the current date and time
@@ -86,7 +83,7 @@ export const sessionRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const examSession = await ctx.prisma.examSession.findFirst({
         where: {
-          uniqueCode: parseInt(input.uniqueCode),
+          uniqueCode: input.uniqueCode,
           studentId: input.studentId,
         },
       });
@@ -106,7 +103,7 @@ export const sessionRouter = createTRPCRouter({
     .mutation(async ({ input, ctx }) => {
       const validSession = await ctx.prisma.createdSession.findUnique({
         where: {
-          uniqueCode: Number(input.uniqueCode),
+          uniqueCode: input.uniqueCode,
           valid: true,
         },
       });

@@ -10,7 +10,7 @@ import { BlackButton, WhiteButton } from "~/components/button";
 
 // This is not the same as the prisma DB type, this is a custom type to collate data we want to get from the API.
 type ExamSessionType = {
-  sID: number;
+  sID: string;
   name: string | null;
   sessionId: string;
   seatNumber: string;
@@ -18,7 +18,7 @@ type ExamSessionType = {
   endTime: Date | null;
   suspiciousActivity: boolean;
   studentId: string;
-  uniqueCode: number;
+  uniqueCode: string;
   examinerId: string;
   image: string | null;
   manuallyFailed: boolean;
@@ -29,7 +29,7 @@ type ExamSessionType = {
 };
 
 export default function Session() {
-  const [sessionCode, setSessionCode] = useState<string | null>("");
+  const [sessionCode, setSessionCode] = useState<string>("");
   const [flaggedSessions, setFlaggedSessions] = useState<string[]>([]);
   const [examSessions, setExamSessions] = useState<ExamSessionType[]>([]);
   const endSession = api.sessions.endSession.useMutation();
@@ -40,7 +40,7 @@ export default function Session() {
   const setExamSessionStrikes = api.students.setStrikes.useMutation();
   const getExamSessionsByCode = api.examSessions.getExamSessionsByCode.useQuery(
     {
-      uniqueCode: Number(sessionCode),
+      uniqueCode: sessionCode,
     }
   );
 
@@ -83,7 +83,7 @@ export default function Session() {
       }
     } finally {
       localStorage.removeItem("sessionCode");
-      setSessionCode(null);
+      setSessionCode("");
       router.push("/account");
     }
   };

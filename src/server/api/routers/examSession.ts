@@ -7,7 +7,7 @@ import {
 
 export const examSessionRouter = createTRPCRouter({
   createExamSession: publicProcedure
-    .input(z.object({ uniqueCode: z.number() }))
+    .input(z.object({ uniqueCode: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const userEmail = ctx.session?.user.email;
 
@@ -114,7 +114,7 @@ export const examSessionRouter = createTRPCRouter({
     }),
 
   getExamSessionsByCode: publicProcedure
-    .input(z.object({ uniqueCode: z.number() }))
+    .input(z.object({ uniqueCode: z.string() }))
     .query(async ({ input, ctx }) => {
       const examSessions = await ctx.prisma.examSession.findMany({
         where: { uniqueCode: input.uniqueCode },
