@@ -1,22 +1,30 @@
 import { TRPCError } from "@trpc/server";
 import { createHash, randomBytes } from "crypto";
 import validator from "validator";
-import { z } from "zod";
+import { string, z } from "zod";
 import { UserRoles } from "~/utils/enums";
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
+import dotenv from "dotenv";
+
+interface foundObject {
+  mid: string;
+  description: string;
+  score: number;
+  topicality: number;
+}
 
 export const externalAPIRouter = createTRPCRouter({
-    //TODO: Not currently implemented
     analyseImage: publicProcedure
       .input(z.object({ base64ImageData: z.string() }))
+      .output(z.array( z.string()))
       .mutation(async ({ input, ctx }) => {
-        const apiKey = "";
-        const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`;
+        const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_CAMERA_API_KEY}`;
         const base64Trimmed = input.base64ImageData.slice(23); //TODO: Probably needs to be changed
+        console.log("Attempting to analyse image")
 
         const response = await fetch(apiURL, {
             method: "POST",
@@ -36,41 +44,18 @@ export const externalAPIRouter = createTRPCRouter({
                 ],
             }),
             headers: {
-                "Content-type": "application/json"
+                "Content-type": "application/json; charset=UTF-8"
             }
         })
 
-        console.log(response)
-        /* 
-        class CloudVision {
-            constructor() {
-                this.labels = [];
-            }
+        const resjson = await response.json()
+        const objectArray: foundObject[] = resjson.responses[0].labelAnnotations;
 
-            labels: string[];
+        let itemsFound: string[] = []
 
-            setLabels(labels: string[]) {
-                this.labels = labels;
-            }
+        for(let i = 0; i < objectArray.length; i++) itemsFound.push(objectArray[i]?.description ?? "")
 
-            async analyseImage(base64ImageData: string) {
-                console.log("attempting to analyse screenshot");
-                try {
-                //Replace with Key
-
-
-                const apiResponse = await axios.post(apiURL, requestData);
-                this.setLabels(apiResponse.data.responses[0].labelAnnotations);
-                } catch (error) {
-                console.error("Error performing cloud vision analysis: ", error);
-                alert(error);
-                }
-                console.log("screenshot analysed");
-                return this.labels;
-            }
-            }
-        
-        */
+        return itemsFound
       }),
 
     //TODO: Not currently implemented
