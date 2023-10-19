@@ -1,6 +1,6 @@
 # Online Exam System
 
-This project was created during the "Software Design" subject at the University of Technology Sydney. 
+This project was created during the "Software Design Studio" subject at the University of Technology Sydney.
 
 Some of the functionality implemented in the application includes:
 
@@ -12,6 +12,3 @@ Some of the functionality implemented in the application includes:
 - Capture upload to AWS S3
 - Activity analysis using Vision AI API
 - Warning and strike system for suspicious activity detection
-
-
-
