@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from "react";
 import Webcam from "react-webcam";
 import Dropdown from "./Dropdown";
-import CloudVision from "./CloudVision";
-import { type } from "os";
 import { BlackButton } from "./button";
-import { DropdownField } from "./input";
 import AWS from "aws-sdk";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-const Camera = (): JSX.Element => {
+export default function Camera() {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
   const [selectedDevice, setSelectedDevice] =
     React.useState<MediaDeviceInfo | null>(null);
@@ -119,16 +116,17 @@ const Camera = (): JSX.Element => {
   let labels;
   const [imgSrc, setImgSrc] = useState(null);
 
-  const visionAPI = new CloudVision();
   const [sus, setSus] = useState<boolean>(false);
   const handleAnalyse = React.useCallback(async () => {
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
-        const imageLabels = await visionAPI.analyseImage(imageSrc);
+        const imageLabels = await analyseImage.mutateAsync({ //TODO: Complete
+          base64ImageData: imageSrc
+        })
         labels = imageLabels;
         console.log(imageLabels);
-        if (imageLabels.some((obj) => obj === "Gadget")) {
+        if (imageLabels.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone") || !studentDetails.data ) {
           //This was obj.division ===... but this was throwing an error
           setSus(true);
           alert("Suspicious Activity Detected");
@@ -277,5 +275,3 @@ const Camera = (): JSX.Element => {
     </div>
   );
 };
-
-export default Camera;
