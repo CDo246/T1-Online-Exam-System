@@ -145,29 +145,15 @@ const Camera = (): JSX.Element => {
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
-        await analyseImage.mutateAsync({ //TODO: Complete
+        const imageLabels = await analyseImage.mutateAsync({ //TODO: Complete
           base64ImageData: imageSrc
         })
-        const imageLabels = await visionAPI.analyseImage(imageSrc);
-        labels = imageLabels;
-        console.log(imageLabels);
+        //const imageLabels = await visionAPI.analyseImage(imageSrc);
+        //labels = imageLabels;
+        //console.log(imageLabels);
 
         if (
-          imageLabels.some((obj: any) => obj.description === "Gadget") ||
-          imageLabels.some((obj: any) => obj.description === "Mobile phone") ||
-          imageLabels.some(
-            (obj: any) => obj.description === "Tablet computer"
-          ) ||
-          imageLabels.some(
-            (obj: any) => obj.description === "Communication Device"
-          ) ||
-          imageLabels.some(
-            (obj: any) =>
-              obj.description === "Mobile device" ||
-              imageLabels.some((obj: any) => obj.description === "Mobile phone")
-          ) ||
-          !studentDetails.data
-        ) {
+          imageLabels.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone") || !studentDetails.data)  {
           console.log("AI Failed");
           alert("AI check failed. Try again, or request manual approval.");
         } else {
