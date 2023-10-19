@@ -6,7 +6,6 @@ import {
 } from "~/server/api/trpc";
 import { generateUniqueCode } from "~/utils/ids";
 
-
 export const sessionRouter = createTRPCRouter({
   createSession: publicProcedure
     .input(z.object({ examinerEmail: z.string() }))
@@ -84,7 +83,7 @@ export const sessionRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const examSession = await ctx.prisma.examSession.findFirst({
         where: {
-          uniqueCode:input.uniqueCode,
+          uniqueCode: input.uniqueCode,
           studentId: input.studentId,
         },
       });
