@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Camera from "../../components/Camera";
-import { GrowFormBox, GrowFormBoxFullHeight } from "~/components/boxes";
+import Camera from "../../components/studentCamera";
+import { GrowFormBoxFullHeight } from "~/components/boxes";
 import { SidebarLayout } from "~/components/layouts";
 import { Sidebar } from "~/components/sidebar";
 import { api } from "~/utils/api";
