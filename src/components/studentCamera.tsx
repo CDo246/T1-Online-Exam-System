@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Webcam from "react-webcam";
-import Dropdown from "./Dropdown";
+import Dropdown from "./dropdown";
 import { BlackButton } from "./button";
 import AWS from "aws-sdk";
 import { api } from "~/utils/api";
@@ -140,18 +140,16 @@ export default function Camera() {
   }, [cameraRef]);
 
   const handleFirstCheck = React.useCallback(async () => {
+    console.log("Running AI Desk Approval")
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
+        console.log("TEST")
         const imageLabels = await analyseImage.mutateAsync({ //TODO: Complete
           base64ImageData: imageSrc
         })
-        //const imageLabels = await visionAPI.analyseImage(imageSrc);
-        //labels = imageLabels;
-        //console.log(imageLabels);
 
-        if (
-          imageLabels.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone") || !studentDetails.data)  {
+        if (imageLabels.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone"))  {
           console.log("AI Failed");
           alert("AI check failed. Try again, or request manual approval.");
         } else {
@@ -162,7 +160,7 @@ export default function Camera() {
           console.log("Mutated");
         }
       }
-
+      console.log("Desk AI Approval end")
       // setImgSrc(imageSrc);
     }
   }, [cameraRef]);

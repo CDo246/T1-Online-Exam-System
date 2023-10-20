@@ -9,6 +9,7 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 import dotenv from "dotenv";
+import { getToken } from "next-auth/jwt"
 
 interface foundObject {
   mid: string;
@@ -22,6 +23,11 @@ export const externalAPIRouter = createTRPCRouter({
       .input(z.object({ base64ImageData: z.string() }))
       .output(z.array( z.string()))
       .mutation(async ({ input, ctx }) => {
+        const userEmail = ctx?.session?.user.email ?? "" //
+        
+
+
+        console.log("CTX end")
         const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_CAMERA_API_KEY}`;
         const base64Trimmed = input.base64ImageData.slice(23); //TODO: Probably needs to be changed
         console.log("Attempting to analyse image")
@@ -54,7 +60,7 @@ export const externalAPIRouter = createTRPCRouter({
         let itemsFound: string[] = []
 
         for(let i = 0; i < objectArray.length; i++) itemsFound.push(objectArray[i]?.description ?? "")
-
+        if (itemsFound.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone")) console.log("fail")
         return itemsFound
       }),
 
