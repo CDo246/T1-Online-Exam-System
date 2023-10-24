@@ -41,6 +41,9 @@ export default function Session() {
   const getExamSessionsByCode = api.examSessions.getExamSessionsByCode.useQuery(
     {
       uniqueCode: sessionCode,
+    },
+    {
+      refetchInterval: 1000
     }
   );
 
@@ -51,14 +54,13 @@ export default function Session() {
 
   const router = useRouter();
 
-  console.log(examSessions);
 
   useEffect(() => {
     if (getExamSessionsByCode.data) {
-      setExamSessions(getExamSessionsByCode.data.examSessions);
+        if (JSON.stringify(examSessions) !== JSON.stringify(getExamSessionsByCode.data.examSessions))
+        console.log(getExamSessionsByCode.data.examSessions);
+        setExamSessions(getExamSessionsByCode.data.examSessions);
     }
-    // Log initial examSessions
-    console.log(getExamSessionsByCode.data?.examSessions);
   }, [getExamSessionsByCode.data]);
 
   useEffect(() => {
