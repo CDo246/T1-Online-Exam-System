@@ -191,11 +191,10 @@ const Camera = (): JSX.Element => {
     const intervalId = setInterval(() => {
       if (!cameraRef.current || !studentDetails.data) return;
       const imageSrc = cameraRef.current.getScreenshot() ?? "";
-      addLiveFeedImage
-        .mutateAsync({
-          sessionId: studentDetails.data.sessionId,
-          image: imageSrc ?? "",
-        })
+      addLiveFeedImage.mutateAsync({
+        sessionId: studentDetails.data.sessionId,
+        image: imageSrc ?? "",
+      });
     }, 1000);
 
     return () => {

@@ -43,7 +43,7 @@ export default function Session() {
       uniqueCode: sessionCode,
     },
     {
-      refetchInterval: 1000
+      refetchInterval: 1000,
     }
   );
 
@@ -54,12 +54,14 @@ export default function Session() {
 
   const router = useRouter();
 
-
   useEffect(() => {
     if (getExamSessionsByCode.data) {
-        if (JSON.stringify(examSessions) !== JSON.stringify(getExamSessionsByCode.data.examSessions))
+      if (
+        JSON.stringify(examSessions) !==
+        JSON.stringify(getExamSessionsByCode.data.examSessions)
+      )
         console.log(getExamSessionsByCode.data.examSessions);
-        setExamSessions(getExamSessionsByCode.data.examSessions);
+      setExamSessions(getExamSessionsByCode.data.examSessions);
     }
   }, [getExamSessionsByCode.data]);
 
