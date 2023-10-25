@@ -189,22 +189,19 @@ const Camera = (): JSX.Element => {
 
   React.useEffect(() => {
     const intervalId = setInterval(() => {
-      console.log("Live feed image consolelog");
       if (!cameraRef.current || !studentDetails.data) return;
-      const imageSrc = cameraRef.current.getScreenshot();
-      console.log(imageSrc);
+      const imageSrc = cameraRef.current.getScreenshot() ?? "";
       addLiveFeedImage
         .mutateAsync({
           sessionId: studentDetails.data.sessionId,
           image: imageSrc ?? "",
         })
-        .then((res) => console.log(res));
-    }, 7500);
+    }, 1000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, [handleAnalyse]);
+  }, [handleAnalyse, studentDetails.data]);
 
   //const AWS = require("aws-sdk");
   const config = {
