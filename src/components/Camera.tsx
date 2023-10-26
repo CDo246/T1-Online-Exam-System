@@ -21,7 +21,6 @@ const Camera = (): JSX.Element => {
   const cameraRef = React.useRef<Webcam | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
-
   const router = useRouter();
 
   const { data: session, status } = useSession({
@@ -210,6 +209,8 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
+
+
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       //handleAnalyse(); TODO: Reenable
@@ -317,6 +318,7 @@ const Camera = (): JSX.Element => {
           ref={canvasRef}
           className=" absolute max-h-[50vh] w-full object-contain"
         />
+        <canvas ref ={canvasRef} className = " absolute max-h-[50vh] w-full object-contain"/>
       </div>
 
       {capturing ? (
