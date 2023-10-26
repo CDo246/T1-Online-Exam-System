@@ -9,6 +9,7 @@ import AWS from "aws-sdk";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
@@ -18,6 +19,9 @@ const Camera = (): JSX.Element => {
   const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
+  
   const router = useRouter();
 
   const { data: session, status } = useSession({
@@ -48,10 +52,40 @@ const Camera = (): JSX.Element => {
     [setDevices]
   );
 
+  const handleBlur = () => {
+      canvasRef.current.width = cameraRef.current.video.videoWidth;
+      canvasRef.current.height = cameraRef.current.video.videoHeight;
+      contextRef.current = canvasRef.current.getContext("2d")
+    
+      console.log("Setting up new face tracking")
+      const selfieSegmentation = new SelfieSegmentation({
+        locateFile: (file) =>{
+          return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
+        }
+      });
+
+      selfieSegmentation.setOptions({
+        modelSelection: 1,
+        selfieMode: false,
+      });
+
+      selfieSegmentation.onResults(onResults);
+      const sendToMediaPipe = async () => {
+        cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE 
+        if(!cameraRef.current.video.videoWidth){
+          requestAnimationFrame(sendToMediaPipe);
+          
+        } else {
+          await selfieSegmentation.send({image: cameraRef.current.video});
+          requestAnimationFrame(sendToMediaPipe);
+        }
+      }
+      sendToMediaPipe();//Start loop
+  }
   const handleDropdown = React.useCallback(
     (newDeviceIndex: number) => {
       setSelectedDevice(devices[newDeviceIndex] ?? null);
-      // console.log(devices); //Something weird about the memory here idk
+      
       console.log(devices[newDeviceIndex]);
     },
     [setSelectedDevice]
@@ -177,6 +211,8 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
+
+
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       //handleAnalyse(); TODO: Reenable
@@ -237,6 +273,44 @@ const Camera = (): JSX.Element => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
   }, [handleDevices]);
 
+  const onResults = (results) => {
+    if(contextRef.current && canvasRef.current){
+      contextRef.current.save();
+      contextRef.current.clearRect(
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+      contextRef.current.drawImage(
+        results.segmentationMask,
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+      //only overwrite existing pixels
+      contextRef.current.globalCompositeOperation = "source-out";
+      contextRef.current.fillStyle = "#000000";
+      contextRef.current.fillRect(
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+      //only overwrite missing pixels
+      contextRef.current.globalCompositeOperation = "destination-atop";
+      contextRef.current.drawImage(
+        results.image,
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+      contextRef.current.restore();
+    }
+  }
+  //add a button where one click predictWebcam
   return (
     <div className="flex max-h-full min-h-full flex-col gap-2 overflow-y-auto">
       <div className="max-h-full flex-1 overflow-y-auto">
@@ -244,8 +318,9 @@ const Camera = (): JSX.Element => {
           audio={false}
           videoConstraints={{ deviceId: selectedDevice?.deviceId }}
           ref={cameraRef}
-          className="max-h-[50vh] w-full object-contain"
+          className="absolute max-h-[50vh] w-full object-contain"
         />
+        <canvas ref ={canvasRef} className = " absolute max-h-[50vh] w-full object-contain"/>
       </div>
 
       {capturing ? (
@@ -272,6 +347,9 @@ const Camera = (): JSX.Element => {
       )}
       <a onClick={handleFirstCheck}>
         <BlackButton text="Analyse Image For AI Approval" />
+      </a>
+      <a onClick={handleBlur}>
+        <BlackButton text="Blur" />
       </a>
       <a
         onClick={async () => {
