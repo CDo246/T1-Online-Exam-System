@@ -21,7 +21,7 @@ const Camera = (): JSX.Element => {
   const cameraRef = React.useRef<Webcam | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
-  
+
   const router = useRouter();
 
   const { data: session, status } = useSession({
@@ -53,39 +53,38 @@ const Camera = (): JSX.Element => {
   );
 
   const handleBlur = () => {
-      canvasRef.current.width = cameraRef.current.video.videoWidth;
-      canvasRef.current.height = cameraRef.current.video.videoHeight;
-      contextRef.current = canvasRef.current.getContext("2d")
-    
-      console.log("Setting up new face tracking")
-      const selfieSegmentation = new SelfieSegmentation({
-        locateFile: (file) =>{
-          return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
-        }
-      });
+    canvasRef.current.width = cameraRef.current.video.videoWidth;
+    canvasRef.current.height = cameraRef.current.video.videoHeight;
+    contextRef.current = canvasRef.current.getContext("2d");
 
-      selfieSegmentation.setOptions({
-        modelSelection: 1,
-        selfieMode: false,
-      });
+    console.log("Setting up new face tracking");
+    const selfieSegmentation = new SelfieSegmentation({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
+      },
+    });
 
-      selfieSegmentation.onResults(onResults);
-      const sendToMediaPipe = async () => {
-        cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE 
-        if(!cameraRef.current.video.videoWidth){
-          requestAnimationFrame(sendToMediaPipe);
-          
-        } else {
-          await selfieSegmentation.send({image: cameraRef.current.video});
-          requestAnimationFrame(sendToMediaPipe);
-        }
+    selfieSegmentation.setOptions({
+      modelSelection: 1,
+      selfieMode: false,
+    });
+
+    selfieSegmentation.onResults(onResults);
+    const sendToMediaPipe = async () => {
+      cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE
+      if (!cameraRef.current.video.videoWidth) {
+        requestAnimationFrame(sendToMediaPipe);
+      } else {
+        await selfieSegmentation.send({ image: cameraRef.current.video });
+        requestAnimationFrame(sendToMediaPipe);
       }
-      sendToMediaPipe();//Start loop
-  }
+    };
+    sendToMediaPipe(); //Start loop
+  };
   const handleDropdown = React.useCallback(
     (newDeviceIndex: number) => {
       setSelectedDevice(devices[newDeviceIndex] ?? null);
-      
+
       console.log(devices[newDeviceIndex]);
     },
     [setSelectedDevice]
@@ -211,8 +210,6 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
-
-
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       //handleAnalyse(); TODO: Reenable
@@ -270,7 +267,7 @@ const Camera = (): JSX.Element => {
   }, [handleDevices]);
 
   const onResults = (results) => {
-    if(contextRef.current && canvasRef.current){
+    if (contextRef.current && canvasRef.current) {
       contextRef.current.save();
       contextRef.current.clearRect(
         0,
@@ -305,7 +302,7 @@ const Camera = (): JSX.Element => {
       );
       contextRef.current.restore();
     }
-  }
+  };
   //add a button where one click predictWebcam
   return (
     <div className="flex max-h-full min-h-full flex-col gap-2 overflow-y-auto">
@@ -316,7 +313,10 @@ const Camera = (): JSX.Element => {
           ref={cameraRef}
           className="absolute max-h-[50vh] w-full object-contain"
         />
-        <canvas ref ={canvasRef} className = " absolute max-h-[50vh] w-full object-contain"/>
+        <canvas
+          ref={canvasRef}
+          className=" absolute max-h-[50vh] w-full object-contain"
+        />
       </div>
 
       {capturing ? (
