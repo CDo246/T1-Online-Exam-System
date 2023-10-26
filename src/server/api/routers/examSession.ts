@@ -150,22 +150,6 @@ export const examSessionRouter = createTRPCRouter({
       return { examSessions: modifiedExamSessions };
     }),
 
-  passAICheck: publicProcedure
-    .input(z.object({ sessionId: z.string() }))
-    .mutation(async ({ input, ctx }) => {
-      console.log(input.sessionId);
-      console.log("\n\n\n\n\n\n");
-      const examSession = await ctx.prisma.examSession.update({
-        where: {
-          sessionId: input.sessionId,
-        },
-        data: {
-          deskAIApproved: true,
-        },
-      });
-      console.log(examSession);
-    }),
-
   addDeskImage: publicProcedure
     .input(z.object({ sessionId: z.string(), deskImage: z.string() }))
     .mutation(async ({ input, ctx }) => {

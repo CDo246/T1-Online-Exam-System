@@ -20,16 +20,14 @@ interface foundObject {
 
 export const externalAPIRouter = createTRPCRouter({
     analyseImage: publicProcedure
-      .input(z.object({ base64ImageData: z.string() }))
-      .output(z.array( z.string()))
+      .input(z.object({ sessionId: z.string(), base64ImageData: z.string() }))
+      .output(z.boolean())
       .mutation(async ({ input, ctx }) => {
         const userEmail = ctx?.session?.user.email ?? "" //
+        console.log(input.sessionId)
         
-
-
-        console.log("CTX end")
         const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_CAMERA_API_KEY}`;
-        const base64Trimmed = input.base64ImageData.slice(23); //TODO: Probably needs to be changed
+        const base64Trimmed = input.base64ImageData.slice(23);
         console.log("Attempting to analyse image")
 
         const response = await fetch(apiURL, {
@@ -55,13 +53,45 @@ export const externalAPIRouter = createTRPCRouter({
         })
 
         const resjson = await response.json()
+        if(resjson.error) {
+          console.log("Error with Google API request, probably lacking an API key, add it to the .env")
+          console.log(resjson.error)
+          return false
+        }
         const objectArray: foundObject[] = resjson.responses[0].labelAnnotations;
 
         let itemsFound: string[] = []
 
         for(let i = 0; i < objectArray.length; i++) itemsFound.push(objectArray[i]?.description ?? "")
-        if (itemsFound.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone")) console.log("fail")
-        return itemsFound
+        let wasSuccessful = itemsFound.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone")
+
+        const foundStudent = await ctx.prisma.student.findFirst({
+          where: {
+            user: {
+              email: userEmail
+            }
+          }
+        })
+
+        if(!foundStudent) return false
+
+        const examSession = await ctx.prisma.examSession.updateMany({ //Should only update 1, as sessionId unique
+          where: {
+            AND: [
+              {sessionId: input.sessionId},
+              {student: {
+                user: {
+                  email: userEmail
+                }
+              }}
+            ]
+          },
+          data: {
+            deskAIApproved: true,
+          },
+        });
+
+        return wasSuccessful
       }),
 
     //TODO: Not currently implemented

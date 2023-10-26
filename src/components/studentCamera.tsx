@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Webcam from "react-webcam";
-import Dropdown from "./dropdown";
+import Dropdown from "~/components/Dropdown";
 import { BlackButton } from "./button";
 import AWS from "aws-sdk";
 import { api } from "~/utils/api";
@@ -28,7 +28,7 @@ export default function Camera() {
     email: session ? session.user.email ?? "" : "",
     uniqueCode: useSearchParams().get("sessionCode") ?? "",
   });
-  const passAICheck = api.examSessions.passAICheck.useMutation();
+
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
 
@@ -113,32 +113,6 @@ export default function Camera() {
     }
   }, [recordedChunks]);
 
-  let labels;
-  const [imgSrc, setImgSrc] = useState(null);
-
-  const [sus, setSus] = useState<boolean>(false);
-  const handleAnalyse = React.useCallback(async () => {
-    if (cameraRef.current) {
-      const imageSrc = cameraRef.current.getScreenshot();
-      if (imageSrc != null) {
-        const imageLabels = await analyseImage.mutateAsync({ //TODO: Complete
-          base64ImageData: imageSrc
-        })
-        labels = imageLabels;
-        console.log(imageLabels);
-        if (imageLabels.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone") || !studentDetails.data ) {
-          //This was obj.division ===... but this was throwing an error
-          setSus(true);
-          alert("Suspicious Activity Detected");
-        } else {
-          setSus(false);
-        }
-      }
-
-      // setImgSrc(imageSrc);
-    }
-  }, [cameraRef]);
-
   const handleFirstCheck = React.useCallback(async () => {
     console.log("Running AI Desk Approval")
     if (cameraRef.current) {
@@ -146,18 +120,20 @@ export default function Camera() {
       if (imageSrc != null) {
         console.log("TEST")
         const imageLabels = await analyseImage.mutateAsync({ //TODO: Complete
+          sessionId: studentDetails?.data?.sessionId ?? "",
           base64ImageData: imageSrc
         })
 
-        if (imageLabels.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone"))  {
+        //THIS should be irrelevant
+        if (imageLabels)  {
+          console.log("AI Passed");
+/*           await passAICheck.mutateAsync({
+            sessionId: studentDetails.data.sessionId,
+          }); */
+          console.log("Mutated");
+        } else {
           console.log("AI Failed");
           alert("AI check failed. Try again, or request manual approval.");
-        } else {
-          console.log("AI Passed");
-          await passAICheck.mutateAsync({
-            sessionId: studentDetails.data.sessionId,
-          });
-          console.log("Mutated");
         }
       }
       console.log("Desk AI Approval end")
@@ -167,28 +143,18 @@ export default function Camera() {
 
   React.useEffect(() => {
     const intervalId = setInterval(() => {
-      //handleAnalyse(); TODO: Reenable
-    }, 1000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [handleAnalyse]);
-
-  React.useEffect(() => {
-    const intervalId = setInterval(() => {
       if (!cameraRef.current || !studentDetails.data) return;
       const imageSrc = cameraRef.current.getScreenshot() ?? "";
       addLiveFeedImage.mutateAsync({
         sessionId: studentDetails.data.sessionId,
         image: imageSrc ?? "",
       });
-    }, 1000);
+    }, 100000);
 
     return () => {
       clearInterval(intervalId);
     };
-  }, [handleAnalyse, studentDetails.data]);
+  }, [studentDetails.data]);
 
   //const AWS = require("aws-sdk");
   const config = {
