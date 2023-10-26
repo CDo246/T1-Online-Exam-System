@@ -24,11 +24,9 @@ export const externalAPIRouter = createTRPCRouter({
       .output(z.boolean())
       .mutation(async ({ input, ctx }) => {
         const userEmail = ctx?.session?.user.email ?? "" //
-        console.log(input.sessionId)
-        
+    
         const apiURL = `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_CAMERA_API_KEY}`;
         const base64Trimmed = input.base64ImageData.slice(23);
-        console.log("Attempting to analyse image")
 
         const response = await fetch(apiURL, {
             method: "POST",
@@ -51,8 +49,8 @@ export const externalAPIRouter = createTRPCRouter({
                 "Content-type": "application/json; charset=UTF-8"
             }
         })
-
         const resjson = await response.json()
+        console.log(resjson.responses[0].labelAnnotations)
         if(resjson.error) {
           console.log("Error with Google API request, probably lacking an API key, add it to the .env")
           console.log(resjson.error)
@@ -63,7 +61,7 @@ export const externalAPIRouter = createTRPCRouter({
         let itemsFound: string[] = []
 
         for(let i = 0; i < objectArray.length; i++) itemsFound.push(objectArray[i]?.description ?? "")
-        let wasSuccessful = itemsFound.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone")
+        let wasSuccessful = !itemsFound.some((obj) => obj === "Gadget" || obj === "Mobile phone" || obj === "Tablet computer" || obj === "Communication Device" || obj === "Mobile device" || obj === "Mobile phone")
 
         const foundStudent = await ctx.prisma.student.findFirst({
           where: {
@@ -74,7 +72,6 @@ export const externalAPIRouter = createTRPCRouter({
         })
 
         if(!foundStudent) return false
-
         const examSession = await ctx.prisma.examSession.updateMany({ //Should only update 1, as sessionId unique
           where: {
             AND: [

@@ -118,7 +118,8 @@ export default function Camera() {
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
-        console.log("TEST")
+        console.log("SessionID")
+        console.log(await studentDetails?.data?.sessionId)
         const imageLabels = await analyseImage.mutateAsync({ //TODO: Complete
           sessionId: studentDetails?.data?.sessionId ?? "",
           base64ImageData: imageSrc
