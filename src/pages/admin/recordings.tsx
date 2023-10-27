@@ -21,9 +21,8 @@ export default function Recordings() {
     //   const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
 
       //list all files
-      const listS3Objects = async () => {
+      const listS3Objects = () => {
         try {
-          
           if(data){
             const s3Objects = data.s3Objects;
             setObjects(s3Objects);
@@ -35,7 +34,7 @@ export default function Recordings() {
       };
 
       //download file with objectKey
-      const downloadFile = async(objectKey : string) => {
+      const downloadFile = (objectKey : string) => {
         const link = document.createElement('a');
         const bucketName = "online-anti-cheat";
         link.href = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;

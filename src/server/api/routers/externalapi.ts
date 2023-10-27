@@ -139,7 +139,7 @@ export const externalAPIRouter = createTRPCRouter({
       const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
 
       const response = await client.listObjectsV2().promise();
-          const objects = (response.Contents || []) as { Key: string }[];
+          const objects = (response.Contents ?? []) as { Key: string }[];
           const s3Objects = objects.map((object) => object.Key);
       return {
         s3Objects: s3Objects,
