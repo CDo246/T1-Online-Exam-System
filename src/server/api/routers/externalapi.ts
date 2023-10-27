@@ -125,24 +125,21 @@ export const externalAPIRouter = createTRPCRouter({
       };
     }),
 
+  listRecordings: publicProcedure.query(async ({ input, ctx }) => {
+    const config = {
+      accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
+      secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
+      region: "ap-southeast-2",
+    };
 
+    AWS.config.update(config);
+    const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
 
-  listRecordings : publicProcedure
-    .query(async ({input, ctx}) => {
-      const config = {
-        accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
-        secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
-        region: 'ap-southeast-2',
-      };
-      
-      AWS.config.update(config);
-      const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
-
-      const response = await client.listObjectsV2().promise();
-          const objects = (response.Contents ?? []) as { Key: string }[];
-          const s3Objects = objects.map((object) => object.Key);
-      return {
-        s3Objects: s3Objects,
-      }
-    }),
+    const response = await client.listObjectsV2().promise();
+    const objects = (response.Contents ?? []) as { Key: string }[];
+    const s3Objects = objects.map((object) => object.Key);
+    return {
+      s3Objects: s3Objects,
+    };
+  }),
 });
