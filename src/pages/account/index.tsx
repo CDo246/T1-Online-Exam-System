@@ -98,6 +98,9 @@ export default function Account({
               <BlackButton text="Add Students" />
             </Link>
             <hr />
+            <Link href="/admin/recordings" className="inline-block">
+              <BlackButton text="View Video Recordings" />
+            </Link>
             {sessionCode ? (
               <Link href="/admin/session" className="inline-block">
                 <BlackButton text="Current Session" />
