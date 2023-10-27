@@ -11,13 +11,13 @@ export default function Camera() {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
   const [selectedDevice, setSelectedDevice] =
     React.useState<MediaDeviceInfo | null>(null);
+  const [videoData, setVideoData] = React.useState<any>(null); //TODO: Consider fixing any
   const [capturing, setCapturing] = React.useState<boolean>(false);
   const [captureCompleted, setCaptureCompleted] = React.useState(false);
   const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
   const router = useRouter();
-  let [videoData, setVideoData] = React.useState<any>(null); //TODO: Consider fixing any
 
   const { data: session, status } = useSession({
     required: true,
@@ -35,7 +35,7 @@ export default function Camera() {
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
 
   //TODO: AWS UseQueries
-  const analyseImage = api.externalAPIs.analyseImage.useMutation()
+  const analyseImage = api.externalAPIs.analyseImage.useMutation();
 
   const handleDevices = React.useCallback(
     (mediaDevices: MediaDeviceInfo[]) => {
@@ -90,17 +90,19 @@ export default function Camera() {
 
   //Updates videoData
   useEffect(() => {
-    console.log("Updating video data")
-    setVideoData(new Blob(recordedChunks, {
-      type: "video/webm",
-    }))
-  }, [recordedChunks])
+    console.log("Updating video data");
+    setVideoData(
+      new Blob(recordedChunks, {
+        type: "video/webm",
+      })
+    );
+  }, [recordedChunks]);
 
   const handleStopCaptureClick = () => {
     mediaRecorderRef.current?.stop(); //Stopping this triggers an event listener that calls handleDataAvailable, which in turn triggers the useEffect above
     setCapturing(false);
     setCaptureCompleted(true);
-  }
+  };
 
   const handleDownload = React.useCallback(() => {
     if (recordedChunks.length) {
@@ -116,21 +118,22 @@ export default function Camera() {
   }, [recordedChunks]);
 
   const handleFirstCheck = async () => {
-    console.log("Running AI Desk Approval")
+    console.log("Running AI Desk Approval");
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
-        console.log("SessionID")
-        console.log(await studentDetails?.data)
-        const passedAICheck = await analyseImage.mutateAsync({ //TODO: Complete
+        console.log("SessionID");
+        console.log(studentDetails?.data);
+        const passedAICheck = await analyseImage.mutateAsync({
+          //TODO: Complete
           sessionId: studentDetails?.data?.sessionId ?? "",
-          base64ImageData: imageSrc
-        })
+          base64ImageData: imageSrc,
+        });
 
-        if (passedAICheck) alert("AI Check Passed")
-        else alert("AI check failed. Try again, or request manual approval.")
+        if (passedAICheck) alert("AI Check Passed");
+        else alert("AI check failed. Try again, or request manual approval.");
       }
-      console.log("Desk AI Approval end")
+      console.log("Desk AI Approval end");
       // setImgSrc(imageSrc);
     }
   };
@@ -159,9 +162,10 @@ export default function Camera() {
   AWS.config.update(config);
   const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
 
-  const handleUpload = React.useCallback(async () => {
-    console.log(videoData)
-/*     const formData = new FormData();
+  const handleUpload = React.useCallback(() => {
+    //Needs to be made async again if uncommented
+    console.log(videoData);
+    /*     const formData = new FormData();
     formData.append("video", blob, "video.webm");
     await client
       .putObject({
@@ -188,49 +192,56 @@ export default function Camera() {
         />
       </div>
 
-      {capturing ? 
+      {capturing ? (
         <div className="grid gap-y-2">
           <a onClick={handleStopCaptureClick}>
             <BlackButton text="Stop Capture" />
           </a>
         </div>
-       : 
-        (studentDetails.data?.deskAIApproved || studentDetails.data?.deskManuallyApproved) && !captureCompleted && <>
-          <Dropdown list={devices} handler={handleDropdown} />
-          <a onClick={handleStartCaptureClick}>
-            <BlackButton text="Start Capture" />
-          </a>
-        </>
-      }
+      ) : (
+        (studentDetails.data?.deskAIApproved ??
+          studentDetails.data?.deskManuallyApproved) &&
+        !captureCompleted && (
+          <>
+            <Dropdown list={devices} handler={handleDropdown} />
+            <a onClick={handleStartCaptureClick}>
+              <BlackButton text="Start Capture" />
+            </a>
+          </>
+        )
+      )}
       {recordedChunks.length > 0 && captureCompleted && (
-        <div> 
+        <div>
           <a onClick={handleDownload}>
             <BlackButton text="Download" />
           </a>
           <a onClick={handleUpload}>
-            <BlackButton text="Upload (Required to pass exam)"/>
+            <BlackButton text="Upload (Required to pass exam)" />
           </a>
         </div>
       )}
-      {!studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved && <a onClick={handleFirstCheck}>
-        <BlackButton text="Analyse Image For AI Approval" />
-      </a>}
-      {
-        !studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved &&
-      <a
-        onClick={async () => {
-          if (!cameraRef.current || !studentDetails.data) return;
-          const imageSrc = cameraRef.current.getScreenshot();
-          console.log(imageSrc);
-          await addDeskImage.mutateAsync({
-            sessionId: studentDetails.data.sessionId,
-            deskImage: imageSrc ?? "",
-          });
-        }}
-      >
-        <BlackButton text="Request Manual Approval" />
-      </a>
-      }
+      {!studentDetails.data?.deskAIApproved &&
+        !studentDetails.data?.deskManuallyApproved && (
+          <a onClick={handleFirstCheck}>
+            <BlackButton text="Analyse Image For AI Approval" />
+          </a>
+        )}
+      {!studentDetails.data?.deskAIApproved &&
+        !studentDetails.data?.deskManuallyApproved && (
+          <a
+            onClick={async () => {
+              if (!cameraRef.current || !studentDetails.data) return;
+              const imageSrc = cameraRef.current.getScreenshot();
+              console.log(imageSrc);
+              await addDeskImage.mutateAsync({
+                sessionId: studentDetails.data.sessionId,
+                deskImage: imageSrc ?? "",
+              });
+            }}
+          >
+            <BlackButton text="Request Manual Approval" />
+          </a>
+        )}
     </div>
   );
-};
+}
