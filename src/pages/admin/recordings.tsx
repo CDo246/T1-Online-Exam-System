@@ -10,14 +10,15 @@ export default function Recordings() {
     const [objects, setObjects] = useState<string []>([]);
 
     const config = {
-	    accessKeyId: '',
-	    secretAccessKey: '',
+      accessKeyId: '',
+      secretAccessKey: '',
     region: 'ap-southeast-2',
     }
 
       AWS.config.update(config);
       const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
 
+      //list all files
       const listS3Objects = async () => {
         try {
           const response = await client.listObjectsV2().promise();
@@ -29,16 +30,26 @@ export default function Recordings() {
         }
       };
 
+      //download file with objectKey
+      const downloadFile = async(objectKey : string) => {
+        const link = document.createElement('a');
+        const bucketName = "online-anti-cheat";
+        link.href = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;
+        link.target = '_blank';
+        link.download = objectKey; // Set the suggested file name
+        link.click();
+      };
+
   return (
     <div>
         <a onClick={listS3Objects}>
             <BlackButton text="refresh" />
           </a>
-      <h1>List of S3 Objects</h1>
+      <h1>Exam Session Video Recordings</h1>
       <ul>
         {objects.map((objectKey, index) => (
           <li key={index}>
-            <Link href={`/s3/${objectKey}`}>{objectKey}</Link>
+            <a onClick={()=>downloadFile(objectKey)}>{objectKey}</a>
           </li>
         ))}
       </ul>
