@@ -9,13 +9,14 @@ import AWS from "aws-sdk";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SelfieSegmentation } from "@mediapipe/selfie_segmentation";
+import { Results, SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 
 const Camera = (): JSX.Element => {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
   const [selectedDevice, setSelectedDevice] =
     React.useState<MediaDeviceInfo | null>(null);
   const [capturing, setCapturing] = React.useState<boolean>(false);
+  const [blurring, setBlurring] = React.useState<boolean>(false);
   const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
@@ -53,13 +54,13 @@ const Camera = (): JSX.Element => {
   );
 
   const handleBlur = () => {
-    if(cameraRef.current){
-      videoRef.current = cameraRef.current.video
-      if(canvasRef.current && videoRef.current){
+    if (cameraRef.current) {
+      videoRef.current = cameraRef.current.video;
+      if (canvasRef.current && videoRef.current) {
         canvasRef.current.width = videoRef.current.videoWidth;
         canvasRef.current.height = videoRef.current.videoHeight;
         contextRef.current = canvasRef.current.getContext("2d");
-
+        setBlurring(true);
         console.log("Setting up new face tracking");
         const selfieSegmentation = new SelfieSegmentation({
           locateFile: (file) => {
@@ -86,6 +87,7 @@ const Camera = (): JSX.Element => {
       }
     }
   };
+
   const handleDropdown = React.useCallback(
     (newDeviceIndex: number) => {
       setSelectedDevice(devices[newDeviceIndex] ?? null);
@@ -215,8 +217,6 @@ const Camera = (): JSX.Element => {
     }
   }, [cameraRef]);
 
-
-
   React.useEffect(() => {
     const intervalId = setInterval(() => {
       //handleAnalyse(); TODO: Reenable
@@ -273,7 +273,7 @@ const Camera = (): JSX.Element => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
   }, [handleDevices]);
 
-  const onResults = (results) => {
+  const onResults = (results: Results) => {
     if (contextRef.current && canvasRef.current) {
       contextRef.current.save();
       contextRef.current.clearRect(
@@ -324,7 +324,6 @@ const Camera = (): JSX.Element => {
           ref={canvasRef}
           className=" absolute max-h-[50vh] w-full object-contain"
         />
-        <canvas ref ={canvasRef} className = " absolute max-h-[50vh] w-full object-contain"/>
       </div>
 
       {capturing ? (
@@ -352,7 +351,7 @@ const Camera = (): JSX.Element => {
       <a onClick={handleFirstCheck}>
         <BlackButton text="Analyse Image For AI Approval" />
       </a>
-      <a onClick={handleBlur}>
+      <a id="Blur" onClick={handleBlur}>
         <BlackButton text="Blur" />
       </a>
       <a
