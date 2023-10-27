@@ -1,6 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
 import { studentRouter } from "./routers/student";
 import { accountRouter } from "./routers/account";
+import { externalAPIRouter } from "./routers/externalapi";
 import { userRouter } from "./routers/user";
 import { sessionRouter } from "./routers/session";
 import { examSessionRouter } from "./routers/examSession";
@@ -13,6 +14,7 @@ import { examSessionRouter } from "./routers/examSession";
 export const appRouter = createTRPCRouter({
   users: userRouter,
   students: studentRouter,
+  externalAPIs: externalAPIRouter,
   accounts: accountRouter,
   sessions: sessionRouter,
   examSessions: examSessionRouter,

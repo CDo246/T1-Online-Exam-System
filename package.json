@@ -23,7 +23,7 @@
     "@trpc/react-query": "^10.34.0",
     "@trpc/server": "^10.34.0",
     "@types/validator": "^13.11.1",
-    "aws-sdk": "^2.1472.0",
+    "aws-sdk": "^2.1477.0",
     "axios": "^1.5.0",
     "next": "^13.5.2",
     "next-auth": "^4.22.4",
