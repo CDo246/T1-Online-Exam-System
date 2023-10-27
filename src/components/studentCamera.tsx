@@ -12,10 +12,12 @@ export default function Camera() {
   const [selectedDevice, setSelectedDevice] =
     React.useState<MediaDeviceInfo | null>(null);
   const [capturing, setCapturing] = React.useState<boolean>(false);
+  const [captureCompleted, setCaptureCompleted] = React.useState(false);
   const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
   const router = useRouter();
+  let [videoData, setVideoData] = React.useState<any>(null); //TODO: Consider fixing any
 
   const { data: session, status } = useSession({
     required: true,
@@ -32,18 +34,12 @@ export default function Camera() {
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
 
-  //TODO: AWS/Google Query UseQueries
+  //TODO: AWS UseQueries
   const analyseImage = api.externalAPIs.analyseImage.useMutation()
-
-  useEffect(() => {
-    // Log initial examSessions
-    console.log(studentDetails.data);
-  }, [studentDetails.data]);
 
   const handleDevices = React.useCallback(
     (mediaDevices: MediaDeviceInfo[]) => {
       setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
-      //console.log("List", mediaDevices.filter(({ kind }) => kind === "videoinput"))
     },
     [setDevices]
   );
@@ -92,55 +88,52 @@ export default function Camera() {
     [setRecordedChunks]
   );
 
-  const handleStopCaptureClick = React.useCallback(() => {
-    mediaRecorderRef.current?.stop();
+  //Updates videoData
+  useEffect(() => {
+    console.log("Updating video data")
+    setVideoData(new Blob(recordedChunks, {
+      type: "video/webm",
+    }))
+  }, [recordedChunks])
+
+  const handleStopCaptureClick = () => {
+    mediaRecorderRef.current?.stop(); //Stopping this triggers an event listener that calls handleDataAvailable, which in turn triggers the useEffect above
     setCapturing(false);
-  }, [mediaRecorderRef, selectedDevice, setCapturing]);
+    setCaptureCompleted(true);
+  }
 
   const handleDownload = React.useCallback(() => {
     if (recordedChunks.length) {
-      const blob = new Blob(recordedChunks, {
-        type: "video/webm",
-      });
-      const url = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(videoData);
       const a = document.createElement("a");
       document.body.appendChild(a);
       a.href = url;
       a.download = "react-webcam-stream-capture.webm";
       a.click();
       window.URL.revokeObjectURL(url);
-      setRecordedChunks([]);
+      //setRecordedChunks([]); TODO: This has been disabed to stop button from disappearing
     }
   }, [recordedChunks]);
 
-  const handleFirstCheck = React.useCallback(async () => {
+  const handleFirstCheck = async () => {
     console.log("Running AI Desk Approval")
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
         console.log("SessionID")
-        console.log(await studentDetails?.data?.sessionId)
-        const imageLabels = await analyseImage.mutateAsync({ //TODO: Complete
+        console.log(await studentDetails?.data)
+        const passedAICheck = await analyseImage.mutateAsync({ //TODO: Complete
           sessionId: studentDetails?.data?.sessionId ?? "",
           base64ImageData: imageSrc
         })
 
-        //THIS should be irrelevant
-        if (imageLabels)  {
-          console.log("AI Passed");
-/*           await passAICheck.mutateAsync({
-            sessionId: studentDetails.data.sessionId,
-          }); */
-          console.log("Mutated");
-        } else {
-          console.log("AI Failed");
-          alert("AI check failed. Try again, or request manual approval.");
-        }
+        if (passedAICheck) alert("AI Check Passed")
+        else alert("AI check failed. Try again, or request manual approval.")
       }
       console.log("Desk AI Approval end")
       // setImgSrc(imageSrc);
     }
-  }, [cameraRef]);
+  };
 
   React.useEffect(() => {
     const intervalId = setInterval(() => {
@@ -165,14 +158,10 @@ export default function Camera() {
   };
   AWS.config.update(config);
   const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
-  const handleUpload = React.useCallback(async () => {
-    mediaRecorderRef.current?.stop();
-    setCapturing(false);
 
-    const blob = new Blob(recordedChunks, {
-      type: "video/webm",
-    });
-    const formData = new FormData();
+  const handleUpload = React.useCallback(async () => {
+    console.log(videoData)
+/*     const formData = new FormData();
     formData.append("video", blob, "video.webm");
     await client
       .putObject({
@@ -181,8 +170,8 @@ export default function Camera() {
         Key: "video33.webm",
         //ContentType: "video/webm",
       })
-      .promise();
-  }, [mediaRecorderRef, selectedDevice, recordedChunks]);
+      .promise(); */
+  }, [mediaRecorderRef, selectedDevice, recordedChunks, videoData]);
 
   React.useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
@@ -199,31 +188,35 @@ export default function Camera() {
         />
       </div>
 
-      {capturing ? (
-        <div>
+      {capturing ? 
+        <div className="grid gap-y-2">
           <a onClick={handleStopCaptureClick}>
             <BlackButton text="Stop Capture" />
           </a>
-          <a onClick={handleUpload}>
-            <BlackButton text="Stop and Upload Capture" />
-          </a>
         </div>
-      ) : (
-        <>
+       : 
+        (studentDetails.data?.deskAIApproved || studentDetails.data?.deskManuallyApproved) && !captureCompleted && <>
           <Dropdown list={devices} handler={handleDropdown} />
           <a onClick={handleStartCaptureClick}>
             <BlackButton text="Start Capture" />
           </a>
         </>
+      }
+      {recordedChunks.length > 0 && captureCompleted && (
+        <div> 
+          <a onClick={handleDownload}>
+            <BlackButton text="Download" />
+          </a>
+          <a onClick={handleUpload}>
+            <BlackButton text="Upload (Required to pass exam)"/>
+          </a>
+        </div>
       )}
-      {recordedChunks.length > 0 && (
-        <a onClick={handleDownload}>
-          <BlackButton text="Download" />
-        </a>
-      )}
-      <a onClick={handleFirstCheck}>
+      {!studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved && <a onClick={handleFirstCheck}>
         <BlackButton text="Analyse Image For AI Approval" />
-      </a>
+      </a>}
+      {
+        !studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved &&
       <a
         onClick={async () => {
           if (!cameraRef.current || !studentDetails.data) return;
@@ -237,6 +230,7 @@ export default function Camera() {
       >
         <BlackButton text="Request Manual Approval" />
       </a>
+      }
     </div>
   );
 };

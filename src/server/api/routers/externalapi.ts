@@ -71,6 +71,7 @@ export const externalAPIRouter = createTRPCRouter({
           }
         })
 
+        console.log("SessionID " + input.sessionId)
         if(!foundStudent) return false
         const examSession = await ctx.prisma.examSession.updateMany({ //Should only update 1, as sessionId unique
           where: {
@@ -87,7 +88,7 @@ export const externalAPIRouter = createTRPCRouter({
             deskAIApproved: true,
           },
         });
-
+        console.log(examSession)
         return wasSuccessful
       }),
 
