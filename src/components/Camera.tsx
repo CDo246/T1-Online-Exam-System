@@ -21,6 +21,7 @@ const Camera = (): JSX.Element => {
   const cameraRef = React.useRef<Webcam | null>(null);
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
   const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
+  const videoRef = React.useRef<Webcam["video"] | null>(null);
   const router = useRouter();
 
   const { data: session, status } = useSession({
@@ -52,33 +53,38 @@ const Camera = (): JSX.Element => {
   );
 
   const handleBlur = () => {
-    canvasRef.current.width = cameraRef.current.video.videoWidth;
-    canvasRef.current.height = cameraRef.current.video.videoHeight;
-    contextRef.current = canvasRef.current.getContext("2d");
+    if(cameraRef.current){
+      videoRef.current = cameraRef.current.video
+      if(canvasRef.current && videoRef.current){
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        contextRef.current = canvasRef.current.getContext("2d");
 
-    console.log("Setting up new face tracking");
-    const selfieSegmentation = new SelfieSegmentation({
-      locateFile: (file) => {
-        return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
-      },
-    });
+        console.log("Setting up new face tracking");
+        const selfieSegmentation = new SelfieSegmentation({
+          locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
+          },
+        });
 
-    selfieSegmentation.setOptions({
-      modelSelection: 1,
-      selfieMode: false,
-    });
+        selfieSegmentation.setOptions({
+          modelSelection: 1,
+          selfieMode: false,
+        });
 
-    selfieSegmentation.onResults(onResults);
-    const sendToMediaPipe = async () => {
-      cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE
-      if (!cameraRef.current.video.videoWidth) {
-        requestAnimationFrame(sendToMediaPipe);
-      } else {
-        await selfieSegmentation.send({ image: cameraRef.current.video });
-        requestAnimationFrame(sendToMediaPipe);
+        selfieSegmentation.onResults(onResults);
+        const sendToMediaPipe = async () => {
+          cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE
+          if (!videoRef.current) {
+            requestAnimationFrame(sendToMediaPipe);
+          } else {
+            await selfieSegmentation.send({ image: videoRef.current });
+            requestAnimationFrame(sendToMediaPipe);
+          }
+        };
+        sendToMediaPipe(); //Start loop
       }
-    };
-    sendToMediaPipe(); //Start loop
+    }
   };
   const handleDropdown = React.useCallback(
     (newDeviceIndex: number) => {
