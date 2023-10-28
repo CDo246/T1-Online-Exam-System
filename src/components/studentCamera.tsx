@@ -6,44 +6,47 @@ import AWS from "aws-sdk";
 import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { record } from "zod";
 
 export default function Camera() {
   const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
   const [selectedDevice, setSelectedDevice] =
     React.useState<MediaDeviceInfo | null>(null);
-  const [videoData, setVideoData] = React.useState<any>(null); //TODO: Consider fixing any
   const [capturing, setCapturing] = React.useState<boolean>(false);
   const [captureCompleted, setCaptureCompleted] = React.useState(false);
-  const [recordedChunks, setRecordedChunks] = React.useState<Blob[] | []>([]);
+  const [recordedChunks, setRecordedChunks] = React.useState<Blob[]>([]);
   const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
   const cameraRef = React.useRef<Webcam | null>(null);
   const router = useRouter();
-
+  
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
       router.push("/");
     },
   });
-
+  
   const studentDetails = api.students.getStudentSession.useQuery({
     email: session ? session.user.email ?? "" : "",
     uniqueCode: useSearchParams().get("sessionCode") ?? "",
   });
-
+  
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
-
+  
   //TODO: AWS UseQueries
   const analyseImage = api.externalAPIs.analyseImage.useMutation();
-
+  
   const handleDevices = React.useCallback(
     (mediaDevices: MediaDeviceInfo[]) => {
       setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
     },
     [setDevices]
-  );
-
+    );
+  React.useEffect(() => {
+    navigator.mediaDevices.enumerateDevices().then(handleDevices);
+  }, [handleDevices]);
+    
   const handleDropdown = React.useCallback(
     (newDeviceIndex: number) => {
       setSelectedDevice(devices[newDeviceIndex] ?? null);
@@ -88,16 +91,6 @@ export default function Camera() {
     [setRecordedChunks]
   );
 
-  //Updates videoData
-  useEffect(() => {
-    console.log("Updating video data");
-    setVideoData(
-      new Blob(recordedChunks, {
-        type: "video/webm",
-      })
-    );
-  }, [recordedChunks]);
-
   const handleStopCaptureClick = () => {
     mediaRecorderRef.current?.stop(); //Stopping this triggers an event listener that calls handleDataAvailable, which in turn triggers the useEffect above
     setCapturing(false);
@@ -106,7 +99,8 @@ export default function Camera() {
 
   const handleDownload = React.useCallback(() => {
     if (recordedChunks.length) {
-      const url = URL.createObjectURL(videoData);
+      
+      const url = URL.createObjectURL(new Blob(recordedChunks, {type: "video/webm"}));
       const a = document.createElement("a");
       document.body.appendChild(a);
       a.href = url;
@@ -125,7 +119,6 @@ export default function Camera() {
         console.log("SessionID");
         console.log(studentDetails?.data);
         const passedAICheck = await analyseImage.mutateAsync({
-          //TODO: Complete
           sessionId: studentDetails?.data?.sessionId ?? "",
           base64ImageData: imageSrc,
         });
@@ -164,7 +157,6 @@ export default function Camera() {
 
   const handleUpload = React.useCallback(() => {
     //Needs to be made async again if uncommented
-    console.log(videoData);
     /*     const formData = new FormData();
     formData.append("video", blob, "video.webm");
     await client
@@ -175,11 +167,8 @@ export default function Camera() {
         //ContentType: "video/webm",
       })
       .promise(); */
-  }, [mediaRecorderRef, selectedDevice, recordedChunks, videoData]);
+  }, [mediaRecorderRef, selectedDevice, recordedChunks]);
 
-  React.useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then(handleDevices);
-  }, [handleDevices]);
 
   return (
     <div className="flex max-h-full min-h-full flex-col gap-2 overflow-y-auto">
@@ -211,7 +200,7 @@ export default function Camera() {
         )
       )}
       {recordedChunks.length > 0 && captureCompleted && (
-        <div>
+        <div className="grid gap-y-2">
           <a onClick={handleDownload}>
             <BlackButton text="Download" />
           </a>
