@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef} from "react";
 import Webcam from "react-webcam";
 import Dropdown from "~/components/Dropdown";
 import { BlackButton } from "./button";
@@ -9,14 +9,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { record } from "zod";
 
 export default function Camera() {
-  const [devices, setDevices] = React.useState<MediaDeviceInfo[] | []>([]);
+  const [devices, setDevices] = useState<MediaDeviceInfo[] | []>([]);
   const [selectedDevice, setSelectedDevice] =
-    React.useState<MediaDeviceInfo | null>(null);
-  const [capturing, setCapturing] = React.useState<boolean>(false);
-  const [captureCompleted, setCaptureCompleted] = React.useState(false);
-  const [recordedChunks, setRecordedChunks] = React.useState<Blob[]>([]);
-  const mediaRecorderRef = React.useRef<MediaRecorder | null>(null);
-  const cameraRef = React.useRef<Webcam | null>(null);
+    useState<MediaDeviceInfo | null>(null);
+  const [capturing, setCapturing] = useState<boolean>(false);
+  const [captureCompleted, setCaptureCompleted] = useState(false);
+  const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const cameraRef = useRef<Webcam | null>(null);
   const router = useRouter();
   
   const { data: session, status } = useSession({
@@ -33,73 +33,46 @@ export default function Camera() {
   
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
-  
-  //TODO: AWS UseQueries
   const analyseImage = api.externalAPIs.analyseImage.useMutation();
+  //TODO: AWS UseQueries
   
-  const handleDevices = React.useCallback(
-    (mediaDevices: MediaDeviceInfo[]) => {
+  useEffect(() => { //List the media devices
+    navigator.mediaDevices.enumerateDevices().then((mediaDevices: MediaDeviceInfo[]) => {
       setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
-    },
-    [setDevices]
-    );
-  React.useEffect(() => {
-    navigator.mediaDevices.enumerateDevices().then(handleDevices);
-  }, [handleDevices]);
+    });
+  }, []);
     
-  const handleDropdown = React.useCallback(
-    (newDeviceIndex: number) => {
-      setSelectedDevice(devices[newDeviceIndex] ?? null);
-      // console.log(devices); //Something weird about the memory here idk
-      console.log(devices[newDeviceIndex]);
-    },
-    [setSelectedDevice]
-  );
-
   const handleStartCaptureClick = () => {
     navigator.mediaDevices
       .getUserMedia({
         video: { deviceId: { exact: selectedDevice?.deviceId } },
         audio: true,
       })
-      .then(handleStream);
+      .then((stream: MediaStream) => {
+        setCapturing(true);
+        mediaRecorderRef.current = new MediaRecorder(stream, {
+          mimeType: "video/webm",
+        });
+        mediaRecorderRef.current.addEventListener(
+          "dataavailable",
+          (event: BlobEvent) => {
+            if (event.data.size > 0) {
+              setRecordedChunks((prev: Blob[]) => prev.concat(event.data));
+            }
+          }
+        );
+        mediaRecorderRef.current.start();
+      });
   };
 
-  const handleStream = React.useCallback(
-    (stream: MediaStream) => {
-      setCapturing(true);
-      mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: "video/webm",
-      });
-      mediaRecorderRef.current.addEventListener(
-        "dataavailable",
-        handleDataAvailable
-      );
-      mediaRecorderRef.current.start();
-      // console.log(stream);
-      // console.log(stream.getTracks().filter(({label}) => label == selectedDevice?.label));
-    },
-    [setCapturing, mediaRecorderRef]
-  );
-
-  const handleDataAvailable = React.useCallback(
-    (event: BlobEvent) => {
-      if (event.data.size > 0) {
-        setRecordedChunks((prev: Blob[]) => prev.concat(event.data));
-      }
-    },
-    [setRecordedChunks]
-  );
-
   const handleStopCaptureClick = () => {
-    mediaRecorderRef.current?.stop(); //Stopping this triggers an event listener that calls handleDataAvailable, which in turn triggers the useEffect above
+    mediaRecorderRef.current?.stop(); //Stopping this triggers an event listener that calls handleDataAvailable, which in turn triggers the use Effect above
     setCapturing(false);
     setCaptureCompleted(true);
   };
 
-  const handleDownload = React.useCallback(() => {
-    if (recordedChunks.length) {
-      
+  const handleDownload = () => {
+    if (recordedChunks.length) { 
       const url = URL.createObjectURL(new Blob(recordedChunks, {type: "video/webm"}));
       const a = document.createElement("a");
       document.body.appendChild(a);
@@ -107,17 +80,14 @@ export default function Camera() {
       a.download = "react-webcam-stream-capture.webm";
       a.click();
       window.URL.revokeObjectURL(url);
-      //setRecordedChunks([]); TODO: This has been disabed to stop button from disappearing
     }
-  }, [recordedChunks]);
+  }
 
   const handleFirstCheck = async () => {
     console.log("Running AI Desk Approval");
     if (cameraRef.current) {
       const imageSrc = cameraRef.current.getScreenshot();
       if (imageSrc != null) {
-        console.log("SessionID");
-        console.log(studentDetails?.data);
         const passedAICheck = await analyseImage.mutateAsync({
           sessionId: studentDetails?.data?.sessionId ?? "",
           base64ImageData: imageSrc,
@@ -126,12 +96,10 @@ export default function Camera() {
         if (passedAICheck) alert("AI Check Passed");
         else alert("AI check failed. Try again, or request manual approval.");
       }
-      console.log("Desk AI Approval end");
-      // setImgSrc(imageSrc);
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const intervalId = setInterval(() => {
       if (!cameraRef.current || !studentDetails.data) return;
       const imageSrc = cameraRef.current.getScreenshot() ?? "";
@@ -139,7 +107,7 @@ export default function Camera() {
         sessionId: studentDetails.data.sessionId,
         image: imageSrc ?? "",
       });
-    }, 100000);
+    }, 1000);
 
     return () => {
       clearInterval(intervalId);
@@ -155,7 +123,7 @@ export default function Camera() {
   AWS.config.update(config);
   const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
 
-  const handleUpload = React.useCallback(() => {
+  const handleUpload = () => {
     //Needs to be made async again if uncommented
     /*     const formData = new FormData();
     formData.append("video", blob, "video.webm");
@@ -167,8 +135,7 @@ export default function Camera() {
         //ContentType: "video/webm",
       })
       .promise(); */
-  }, [mediaRecorderRef, selectedDevice, recordedChunks]);
-
+  }
 
   return (
     <div className="flex max-h-full min-h-full flex-col gap-2 overflow-y-auto">
@@ -192,7 +159,7 @@ export default function Camera() {
           studentDetails.data?.deskManuallyApproved) &&
         !captureCompleted && (
           <>
-            <Dropdown list={devices} handler={handleDropdown} />
+            <Dropdown list={devices} handler={(newDeviceIndex: number) => setSelectedDevice(devices[newDeviceIndex] ?? null)}/>
             <a onClick={handleStartCaptureClick}>
               <BlackButton text="Start Capture" />
             </a>
