@@ -7,6 +7,7 @@ import { api } from "~/utils/api";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { record } from "zod";
+import { Results, SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 
 export default function Camera() {
   const [devices, setDevices] = useState<MediaDeviceInfo[] | []>([]);
@@ -19,6 +20,12 @@ export default function Camera() {
   const [imageSegmenter, setImageSegmenter] = useState(null)
   const cameraRef = useRef<Webcam | null>(null);
   const router = useRouter();
+
+  //Blurring-Related content
+  const [blurring, setBlurring] = useState<boolean>(false);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const contextRef = useRef<CanvasRenderingContext2D | null>(null);
+  const videoRef = useRef<Webcam["video"] | null>(null);
   
   
   const { data: session, status } = useSession({
@@ -37,7 +44,97 @@ export default function Camera() {
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
   const analyseImage = api.externalAPIs.analyseImage.useMutation();
   const uploadVideo = api.externalAPIs.uploadVideo.useMutation();
+  const uploadPresignedVideo = api.externalAPIs.uploadPresignedVideo.useMutation();
   
+  const handleBlur = () => {
+    console.log("Blurring")
+    if (cameraRef.current) {
+      videoRef.current = cameraRef.current.video;
+      if (canvasRef.current && videoRef.current) {
+        canvasRef.current.width = videoRef.current.videoWidth;
+        canvasRef.current.height = videoRef.current.videoHeight;
+        contextRef.current = canvasRef.current.getContext("2d");
+        setBlurring(true);
+        console.log("Setting up new face tracking");
+        const selfieSegmentation = new SelfieSegmentation({
+          locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`;
+          },
+        });
+
+        selfieSegmentation.setOptions({
+          modelSelection: 1,
+          selfieMode: false,
+        });
+
+        selfieSegmentation.onResults(onBlurResults);
+        const sendToMediaPipe = async () => {
+          cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE
+          if (!videoRef.current) {
+            requestAnimationFrame(sendToMediaPipe);
+          } else {
+            await selfieSegmentation.send({ image: videoRef.current });
+            requestAnimationFrame(sendToMediaPipe);
+          }
+        };
+        sendToMediaPipe(); //Start loop
+      }
+    }
+  };
+
+  const onBlurResults = (results: Results) => {
+    if (contextRef.current && canvasRef.current) {
+      contextRef.current.save();
+
+      //Creates an empty rectangle
+      contextRef.current.clearRect(
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+
+      //Draws an image where red indicates a person, and transparent indicates the background
+      contextRef.current.drawImage( 
+        results.segmentationMask,
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+
+      //Makes any non-transparent pixel black
+      contextRef.current.globalCompositeOperation = "source-out"; //Source-Out :The new shape is drawn where it doesn't overlap the existing canvas content.
+      contextRef.current.fillStyle = "#000000";
+/*       contextRef.current.fillRect(
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      ); */
+      contextRef.current.filter = "blur(40px)"
+      contextRef.current.drawImage(
+        results.image,
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+      contextRef.current.filter = "blur(0px)"
+      //only overwrite missing pixels
+      contextRef.current.globalCompositeOperation = "destination-atop"; //Only draws on transparent pixels
+      contextRef.current.drawImage(
+        results.image,
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height
+      );
+      contextRef.current.restore();
+    }
+  };
+
+
   useEffect(() => { //List the media devices
     navigator.mediaDevices.enumerateDevices().then((mediaDevices: MediaDeviceInfo[]) => {
       setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
@@ -91,11 +188,39 @@ export default function Camera() {
     console.log(recordedChunks)
     const uploadChunks = await new Blob(recordedChunks, {type: "video/webm"}).text()
     
-    uploadVideo.mutateAsync({
+    const presignedData = await uploadPresignedVideo.mutateAsync({
+      userEmail: session?.user.email ?? "",
+      sessionId: studentDetails?.data?.sessionId ?? "",
+    })
+    console.log(presignedData)
+    const data: any = {
+      ...presignedData.fields,
+/*       "Content-Type": "video/webm", */
+/*       uploadChunks, */
+    }
+    console.log(data)
+
+    const formData = new FormData();
+    for(const name in data) formData.append(name, data[name])
+
+    const res = await fetch(presignedData.url, {
+      method: 'POST',
+      body: formData,
+    })
+    console.log(res)
+
+    const blob = new Blob(recordedChunks, {
+      type: "video/webm",
+    });
+    //formData.append('video', blob, 'video.webm');
+    
+
+
+/*     uploadVideo.mutateAsync({
       userEmail: session?.user.email ?? "",
       sessionId: studentDetails?.data?.sessionId ?? "",
       videoFile: uploadChunks,
-    })
+    }) */
 
   }
 
@@ -144,8 +269,14 @@ export default function Camera() {
           ref={cameraRef}
           className="max-h-[50vh] w-full object-contain"
         />
+        <canvas
+          ref={canvasRef}
+          className="max-h-[50vh] w-full object-contain"
+        />
       </div>
-
+      <a id="Blur" onClick={handleBlur}>
+        <BlackButton text="Blur" />
+      </a>
       {capturing ? (
         <div className="grid gap-y-2">
           <a onClick={handleStopCaptureClick}>

@@ -1,16 +1,15 @@
-import { TRPCError } from "@trpc/server";
-import { createHash, randomBytes } from "crypto";
-import validator from "validator";
 import { string, z } from "zod";
-import { UserRoles } from "~/utils/enums";
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-import dotenv from "dotenv";
-import { getToken } from "next-auth/jwt";
 import AWS from "aws-sdk";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  S3RequestPresigner,
+  getSignedUrl,
+} from "@aws-sdk/s3-request-presigner";
 
 interface foundObject {
   mid: string;
@@ -127,6 +126,26 @@ export const externalAPIRouter = createTRPCRouter({
       console.log(result)
 
       return 
+    }),
+
+  uploadPresignedVideo: publicProcedure
+    .input(z.object({ userEmail: z.string(), sessionId: z.string(),}))
+    .mutation(async ({ input, ctx }) => {
+
+      AWS.config.update({ 
+        accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
+        secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
+        region: "ap-southeast-2",
+        signatureVersion: 'v4',
+      });
+
+      const client = new AWS.S3()
+      return client.createPresignedPost({
+        Fields: {
+          Key: "SampleKey"
+        },
+        Bucket: "online-anti-cheat"
+      })      
     }),
 
   listRecordings: publicProcedure.query(async ({ input, ctx }) => {
