@@ -243,17 +243,15 @@ export default function Camera() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (!cameraRef.current || !studentDetails.data) return;
-      const imageSrc = cameraRef.current.getScreenshot({width: 320, height: 200}) ?? ""; //TODO: Note - reduce image size once examiner page formatting is adjusted appropriately
-
-      //TODO: Add background blurring here
-      //https://www.youtube.com/watch?v=WmR9IMUD_CY TODO: Potential WebRTC Guide
-      //TODO: Guide https://developers.google.com/mediapipe/solutions/vision/image_segmenter/web_js#video
-
+      const imageSrc = canvasRef.current ?
+        canvasRef.current.toDataURL("image/wepb", 0.3)
+        :
+        cameraRef.current.getScreenshot({width: 320, height: 200}) ?? ""; //TODO: Note - reduce image size once examiner page formatting is adjusted appropriately
       addLiveFeedImage.mutateAsync({
-        sessionId: studentDetails.data.sessionId,
-        image: imageSrc ?? "",
-      });
-    }, 50000);
+          sessionId: studentDetails.data.sessionId,
+          image: imageSrc ?? "",
+        });
+    }, 1000);
 
     return () => {
       clearInterval(intervalId);
