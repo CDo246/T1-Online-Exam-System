@@ -108,8 +108,15 @@ export const externalAPIRouter = createTRPCRouter({
 
   //TODO: Not currently implemented
   uploadVideo: publicProcedure
-    .input(z.object({ userEmail: z.string() }))
+    .input(z.object({ userEmail: z.string(), videoFile: z.string() }))
     .query(async ({ input, ctx }) => {
+      const config = {
+        accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
+        secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
+        region: "ap-southeast-2",
+      };
+
+
       const user = await ctx.prisma.user.findUnique({
         where: {
           email: input.userEmail,

@@ -16,6 +16,7 @@ export default function Camera() {
   const [captureCompleted, setCaptureCompleted] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const [imageSegmenter, setImageSegmenter] = useState(null)
   const cameraRef = useRef<Webcam | null>(null);
   const router = useRouter();
   
@@ -102,7 +103,12 @@ export default function Camera() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (!cameraRef.current || !studentDetails.data) return;
-      const imageSrc = cameraRef.current.getScreenshot() ?? "";
+      const imageSrc = cameraRef.current.getScreenshot({width: 320, height: 200}) ?? ""; //TODO: Note - reduce image size once examiner page formatting is adjusted appropriately
+
+      //TODO: Add background blurring here
+      //https://www.youtube.com/watch?v=WmR9IMUD_CY TODO: Potential WebRTC Guide
+      //TODO: Guide https://developers.google.com/mediapipe/solutions/vision/image_segmenter/web_js#video
+
       addLiveFeedImage.mutateAsync({
         sessionId: studentDetails.data.sessionId,
         image: imageSrc ?? "",
