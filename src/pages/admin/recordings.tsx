@@ -26,15 +26,56 @@ export default function Recordings() {
 
   useEffect(() => listS3Objects(), [data?.s3Objects])
 
+  console.log(objects)
+
   //download file with objectKey
-  const downloadFile = (objectKey: string) => {
-    const link = document.createElement("a");
+  const downloadFile = async (objectKey: string) => {
+
+
+    console.log("Downloading:")
     const bucketName = "online-anti-cheat";
+    const res = await fetch(`https://${bucketName}.s3.amazonaws.com/${objectKey}`)
+    console.log(res.body)
+    const newRes = await streamToString(res.body)
+    console.log(newRes)
+    const blob = new Blob([newRes], {type: "video/webm"})
+    console.log(blob)
+
+    console.log("true")
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    a.href = url;
+    a.download = "react-webcam-stream-capture.webm";
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
+
+    const link = document.createElement("a");
     link.href = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;
     link.target = "_blank";
     link.download = objectKey; // Set the suggested file name
     link.click();
   };
+
+  async function streamToString(stream: any) {
+    const reader = stream.getReader();
+    const textDecoder = new TextDecoder();
+    let result = '';
+  
+    async function read() {
+      const { done, value } = await reader.read();
+  
+      if (done) {
+        return result;
+      }
+  
+      result += textDecoder.decode(value, { stream: true });
+      return read();
+    }
+  
+    return read();
+  }
 
   return (
     <CentredLayout title="Account Validation">
@@ -48,7 +89,7 @@ export default function Recordings() {
           <BlackButton text="Refresh" />
         </a>
         <br/>
-        <div className="grid grid-cols-[1fr_auto] ">
+        <div className="grid grid-cols-[1fr_auto] gap-y-1">
           {objects.map((objectKey, index) => (
             <>
               <p key={index} className="font-bold text-lg">{objectKey}</p>

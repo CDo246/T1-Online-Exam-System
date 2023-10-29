@@ -75,7 +75,9 @@ export default function Camera() {
 
   const handleDownload = () => {
     if (recordedChunks.length) { 
-      const url = URL.createObjectURL(new Blob(recordedChunks, {type: "video/webm"}));
+      const downloadBlob = new Blob(recordedChunks, {type: "video/webm"})
+      console.log(downloadBlob)
+      const url = URL.createObjectURL(downloadBlob);
       const a = document.createElement("a");
       document.body.appendChild(a);
       a.href = url;
