@@ -20,6 +20,7 @@ export default function Camera() {
   const cameraRef = useRef<Webcam | null>(null);
   const router = useRouter();
   
+  
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
@@ -35,7 +36,7 @@ export default function Camera() {
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
   const analyseImage = api.externalAPIs.analyseImage.useMutation();
-  //TODO: AWS UseQueries
+  const uploadVideo = api.externalAPIs.uploadVideo.useMutation();
   
   useEffect(() => { //List the media devices
     navigator.mediaDevices.enumerateDevices().then((mediaDevices: MediaDeviceInfo[]) => {
@@ -83,6 +84,18 @@ export default function Camera() {
       window.URL.revokeObjectURL(url);
     }
   }
+  
+  const handleUpload = async () => {
+    console.log(recordedChunks)
+    const uploadChunks = await new Blob(recordedChunks, {type: "video/webm"}).text()
+    
+    uploadVideo.mutateAsync({
+      userEmail: session?.user.email ?? "",
+      sessionId: studentDetails?.data?.sessionId ?? "",
+      videoFile: uploadChunks,
+    })
+
+  }
 
   const handleFirstCheck = async () => {
     console.log("Running AI Desk Approval");
@@ -113,35 +126,12 @@ export default function Camera() {
         sessionId: studentDetails.data.sessionId,
         image: imageSrc ?? "",
       });
-    }, 1000);
+    }, 50000);
 
     return () => {
       clearInterval(intervalId);
     };
   }, [studentDetails.data]);
-
-  //const AWS = require("aws-sdk");
-  const config = {
-    accessKeyId: "",
-    secretAccessKey: "",
-    region: "ap-southeast-2",
-  };
-  AWS.config.update(config);
-  const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
-
-  const handleUpload = () => {
-    //Needs to be made async again if uncommented
-    /*     const formData = new FormData();
-    formData.append("video", blob, "video.webm");
-    await client
-      .putObject({
-        Body: blob,
-        Bucket: "online-anti-cheat",
-        Key: "video33.webm",
-        //ContentType: "video/webm",
-      })
-      .promise(); */
-  }
 
   return (
     <div className="flex max-h-full min-h-full flex-col gap-2 overflow-y-auto">

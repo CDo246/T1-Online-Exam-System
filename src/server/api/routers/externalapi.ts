@@ -108,28 +108,37 @@ export const externalAPIRouter = createTRPCRouter({
 
   //TODO: Not currently implemented
   uploadVideo: publicProcedure
-    .input(z.object({ userEmail: z.string(), videoFile: z.string() }))
-    .query(async ({ input, ctx }) => {
+    .input(z.object({ userEmail: z.string(), sessionId: z.string(), videoFile: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const blobFile = new Blob([input.videoFile], {
+        type: "video/webm"
+      })
+      console.log(blobFile)
+
       const config = {
         accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
         secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
         region: "ap-southeast-2",
       };
 
+      AWS.config.update(config);
+      const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
 
-      const user = await ctx.prisma.user.findUnique({
-        where: {
-          email: input.userEmail,
-        },
-      });
+          //Needs to be made async again if uncommented
+      const formData = new FormData();
+      formData.append("video", blobFile, "video.webm");
+      const result = await client
+        .putObject({
+          Body: await blobFile.text(),
+          Bucket: "online-anti-cheat",
+          Key: "failtest2.webm",
+          ContentType: "video/webm",
+        }).promise()
+      console.log(result)
 
-      if (!user) {
-        throw new Error(`User with email ${input.userEmail} not found`);
-      }
 
-      return {
-        role: user.role,
-      };
+      //TODO: Remove
+      return 
     }),
 
   listRecordings: publicProcedure.query(async ({ input, ctx }) => {

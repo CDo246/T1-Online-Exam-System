@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { FormBox } from "~/components/boxes";
-import { BlackButton } from "~/components/button";
+import { BlackBackButton, BlackButton } from "~/components/button";
 import { CentredLayout } from "~/components/layouts";
 import { useEffect, useState } from "react";
 import AWS from "aws-sdk";
@@ -39,11 +39,15 @@ export default function Recordings() {
   return (
     <CentredLayout title="Account Validation">
     <FormBox>
+        <Link href="/account">
+          <BlackBackButton />
+        </Link>
+        <hr/>
         <p className="text-center text-2xl">Exam Session Video Recordings</p>
         <a onClick={listS3Objects}>
           <BlackButton text="Refresh" />
         </a>
-        <hr/>
+        <br/>
         <div className="grid grid-cols-[1fr_auto] ">
           {objects.map((objectKey, index) => (
             <>
