@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef} from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Webcam from "react-webcam";
 import Dropdown from "~/components/Dropdown";
 import { BlackButton } from "./button";
@@ -11,13 +11,14 @@ import { Results, SelfieSegmentation } from "@mediapipe/selfie_segmentation";
 
 export default function Camera() {
   const [devices, setDevices] = useState<MediaDeviceInfo[] | []>([]);
-  const [selectedDevice, setSelectedDevice] =
-    useState<MediaDeviceInfo | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<MediaDeviceInfo | null>(
+    null
+  );
   const [capturing, setCapturing] = useState<boolean>(false);
   const [captureCompleted, setCaptureCompleted] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [imageSegmenter, setImageSegmenter] = useState(null)
+  const [imageSegmenter, setImageSegmenter] = useState(null);
   const cameraRef = useRef<Webcam | null>(null);
   const router = useRouter();
 
@@ -26,28 +27,28 @@ export default function Camera() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const contextRef = useRef<CanvasRenderingContext2D | null>(null);
   const videoRef = useRef<Webcam["video"] | null>(null);
-  
-  
+
   const { data: session, status } = useSession({
     required: true,
     onUnauthenticated() {
       router.push("/");
     },
   });
-  
+
   const studentDetails = api.students.getStudentSession.useQuery({
     email: session ? session.user.email ?? "" : "",
     uniqueCode: useSearchParams().get("sessionCode") ?? "",
   });
-  
+
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
   const analyseImage = api.externalAPIs.analyseImage.useMutation();
   const uploadVideo = api.externalAPIs.uploadVideo.useMutation();
-  const uploadPresignedVideo = api.externalAPIs.uploadPresignedVideo.useMutation();
-  
+  const uploadPresignedVideo =
+    api.externalAPIs.uploadPresignedVideo.useMutation();
+
   const handleBlur = () => {
-    console.log("Blurring")
+    console.log("Blurring");
     if (cameraRef.current) {
       videoRef.current = cameraRef.current.video;
       if (canvasRef.current && videoRef.current) {
@@ -77,10 +78,9 @@ export default function Camera() {
               await selfieSegmentation.send({ image: videoRef.current });
               requestAnimationFrame(sendToMediaPipe);
             }
-          }
-          catch(e) {
-            console.log(e)
-            setBlurring(false)
+          } catch (e) {
+            console.log(e);
+            setBlurring(false);
           }
         };
         sendToMediaPipe(); //Start loop
@@ -98,26 +98,26 @@ export default function Camera() {
           canvasRef.current.width,
           canvasRef.current.height
         );
-  
+
         //Draws an image where red indicates a person, and transparent indicates the background
-        contextRef.current.drawImage( 
+        contextRef.current.drawImage(
           results.segmentationMask,
           0,
           0,
           canvasRef.current.width,
           canvasRef.current.height
         );
-  
+
         //Makes any non-transparent pixel black
         contextRef.current.globalCompositeOperation = "source-out"; //Source-Out :The new shape is drawn where it doesn't overlap the existing canvas content.
         contextRef.current.fillStyle = "#000000";
-  /*       contextRef.current.fillRect(
+        /*       contextRef.current.fillRect(
           0,
           0,
           canvasRef.current.width,
           canvasRef.current.height
         ); */
-        contextRef.current.filter = "blur(40px)"
+        contextRef.current.filter = "blur(40px)";
         contextRef.current.drawImage(
           results.image,
           0,
@@ -125,7 +125,7 @@ export default function Camera() {
           canvasRef.current.width,
           canvasRef.current.height
         );
-        contextRef.current.filter = "blur(0px)"
+        contextRef.current.filter = "blur(0px)";
         //only overwrite missing pixels
         contextRef.current.globalCompositeOperation = "destination-atop"; //Only draws on transparent pixels
         contextRef.current.drawImage(
@@ -137,34 +137,34 @@ export default function Camera() {
         );
         contextRef.current.restore();
         contextRef.current.save();
+      } catch (e) {
+        console.log(e);
       }
-      catch(e) {
-        console.log(e)
-      }
-
     }
   };
 
-
-  useEffect(() => { //List the media devices
-    navigator.mediaDevices.enumerateDevices().then((mediaDevices: MediaDeviceInfo[]) => {
-      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
-    });
+  useEffect(() => {
+    //List the media devices
+    navigator.mediaDevices
+      .enumerateDevices()
+      .then((mediaDevices: MediaDeviceInfo[]) => {
+        setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput"));
+      });
   }, []);
-    
+
   const handleStartCaptureClick = () => {
     handleBlur();
-    console.log("TEST1")
+    console.log("TEST1");
 
-    const stream = canvasRef.current?.captureStream(15) //15FPS
-    if(!stream) {
-      console.log("Stream not found")
+    const stream = canvasRef.current?.captureStream(15); //15FPS
+    if (!stream) {
+      console.log("Stream not found");
       return;
     }
-    setCapturing(true)
+    setCapturing(true);
     mediaRecorderRef.current = new MediaRecorder(stream, {
-      mimeType: "video/webm"
-    })
+      mimeType: "video/webm",
+    });
     //TODO: Try capturing canvas recording instead
     mediaRecorderRef.current.addEventListener(
       "dataavailable",
@@ -176,8 +176,8 @@ export default function Camera() {
     );
     mediaRecorderRef.current.start();
 
-    console.log("TEST")
-      return;
+    console.log("TEST");
+    return;
     navigator.mediaDevices
       .getUserMedia({
         video: { deviceId: { exact: selectedDevice?.deviceId } },
@@ -207,9 +207,9 @@ export default function Camera() {
   };
 
   const handleDownload = () => {
-    if (recordedChunks.length) { 
-      const downloadBlob = new Blob(recordedChunks, {type: "video/webm"})
-      console.log(downloadBlob)
+    if (recordedChunks.length) {
+      const downloadBlob = new Blob(recordedChunks, { type: "video/webm" });
+      console.log(downloadBlob);
       const url = URL.createObjectURL(downloadBlob);
       const a = document.createElement("a");
       document.body.appendChild(a);
@@ -218,48 +218,47 @@ export default function Camera() {
       a.click();
       window.URL.revokeObjectURL(url);
     }
-  }
-  
+  };
+
   //TODO: This is busted and doesn't work
   const handleUpload = async () => {
-    console.log(recordedChunks)
-    const uploadChunks = await new Blob(recordedChunks, {type: "video/webm"}).text()
-    
+    console.log(recordedChunks);
+    const uploadChunks = await new Blob(recordedChunks, {
+      type: "video/webm",
+    }).text();
+
     const presignedData = await uploadPresignedVideo.mutateAsync({
       userEmail: session?.user.email ?? "",
       sessionId: studentDetails?.data?.sessionId ?? "",
-    })
-    console.log(presignedData)
+    });
+    console.log(presignedData);
     const data: any = {
       ...presignedData.fields,
-/*       "Content-Type": "video/webm", */
-/*       uploadChunks, */
-    }
-    console.log(data)
+      /*       "Content-Type": "video/webm", */
+      /*       uploadChunks, */
+    };
+    console.log(data);
 
     const formData = new FormData();
-    for(const name in data) formData.append(name, data[name])
+    for (const name in data) formData.append(name, data[name]);
 
     const res = await fetch(presignedData.url, {
-      method: 'POST',
+      method: "POST",
       body: formData,
-    })
-    console.log(res)
+    });
+    console.log(res);
 
     const blob = new Blob(recordedChunks, {
       type: "video/webm",
     });
     //formData.append('video', blob, 'video.webm');
-    
 
-
-/*     uploadVideo.mutateAsync({
+    /*     uploadVideo.mutateAsync({
       userEmail: session?.user.email ?? "",
       sessionId: studentDetails?.data?.sessionId ?? "",
       videoFile: uploadChunks,
     }) */
-
-  }
+  };
 
   const handleFirstCheck = async () => {
     console.log("Running AI Desk Approval");
@@ -280,14 +279,13 @@ export default function Camera() {
   useEffect(() => {
     const intervalId = setInterval(() => {
       if (!cameraRef.current || !studentDetails.data || !blurring) return;
-      const imageSrc = canvasRef.current ?
-        canvasRef.current.toDataURL("image/wepb", 0.3)
-        :
-        cameraRef.current.getScreenshot({width: 320, height: 200}) ?? ""; //TODO: Note - reduce image size once examiner page formatting is adjusted appropriately
+      const imageSrc = canvasRef.current
+        ? canvasRef.current.toDataURL("image/wepb", 0.3)
+        : cameraRef.current.getScreenshot({ width: 320, height: 200 }) ?? ""; //TODO: Note - reduce image size once examiner page formatting is adjusted appropriately
       addLiveFeedImage.mutateAsync({
-          sessionId: studentDetails.data.sessionId,
-          image: imageSrc ?? "",
-        });
+        sessionId: studentDetails.data.sessionId,
+        image: imageSrc ?? "",
+      });
     }, 1000);
 
     return () => {
@@ -304,10 +302,7 @@ export default function Camera() {
           ref={cameraRef}
           className={`max-h-[50vh] w-full object-contain`}
         />
-        <canvas
-          ref={canvasRef}
-          className="max-h-[0vh] w-full object-contain"
-        />
+        <canvas ref={canvasRef} className="max-h-[0vh] w-full object-contain" />
       </div>
       {capturing ? (
         <div className="grid gap-y-2">
@@ -320,7 +315,12 @@ export default function Camera() {
           studentDetails.data?.deskManuallyApproved) &&
         !captureCompleted && (
           <>
-            <Dropdown list={devices} handler={(newDeviceIndex: number) => setSelectedDevice(devices[newDeviceIndex] ?? null)}/>
+            <Dropdown
+              list={devices}
+              handler={(newDeviceIndex: number) =>
+                setSelectedDevice(devices[newDeviceIndex] ?? null)
+              }
+            />
             <a onClick={handleStartCaptureClick}>
               <BlackButton text="Start Capture" />
             </a>

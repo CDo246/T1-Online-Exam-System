@@ -5,7 +5,11 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 import AWS from "aws-sdk";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import {
   S3RequestPresigner,
   getSignedUrl,
@@ -107,7 +111,13 @@ export const externalAPIRouter = createTRPCRouter({
 
   //TODO: Not currently implemented
   uploadVideo: publicProcedure
-    .input(z.object({ userEmail: z.string(), sessionId: z.string(), videoFile: z.string() }))
+    .input(
+      z.object({
+        userEmail: z.string(),
+        sessionId: z.string(),
+        videoFile: z.string(),
+      })
+    )
     .mutation(async ({ input, ctx }) => {
       const config = {
         accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
@@ -116,36 +126,36 @@ export const externalAPIRouter = createTRPCRouter({
       };
       AWS.config.update(config);
       const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
-      
+
       const result = await client
         .putObject({
           Body: input.videoFile,
           Bucket: "online-anti-cheat",
           Key: "failtest8",
-        }).promise()
-      console.log(result)
+        })
+        .promise();
+      console.log(result);
 
-      return 
+      return;
     }),
 
   uploadPresignedVideo: publicProcedure
-    .input(z.object({ userEmail: z.string(), sessionId: z.string(),}))
-    .mutation(async ({ input, ctx }) => {
-
-      AWS.config.update({ 
+    .input(z.object({ userEmail: z.string(), sessionId: z.string() }))
+    .mutation(({ input, ctx }) => {
+      AWS.config.update({
         accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
         secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
         region: "ap-southeast-2",
-        signatureVersion: 'v4',
+        signatureVersion: "v4",
       });
 
-      const client = new AWS.S3()
+      const client = new AWS.S3();
       return client.createPresignedPost({
         Fields: {
-          Key: "SampleKey"
+          Key: "SampleKey",
         },
-        Bucket: "online-anti-cheat"
-      })      
+        Bucket: "online-anti-cheat",
+      });
     }),
 
   listRecordings: publicProcedure.query(async ({ input, ctx }) => {
