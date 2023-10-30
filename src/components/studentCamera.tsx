@@ -69,12 +69,18 @@ export default function Camera() {
 
         selfieSegmentation.onResults(onBlurResults);
         const sendToMediaPipe = async () => {
-          cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE
-          if (!videoRef.current) {
-            requestAnimationFrame(sendToMediaPipe);
-          } else {
-            await selfieSegmentation.send({ image: videoRef.current });
-            requestAnimationFrame(sendToMediaPipe);
+          try {
+            cameraRef.current = cameraRef.current; //I DO NOT KNOW WHY BUT WE NEED THIS LINE
+            if (!videoRef.current) {
+              requestAnimationFrame(sendToMediaPipe);
+            } else {
+              await selfieSegmentation.send({ image: videoRef.current });
+              requestAnimationFrame(sendToMediaPipe);
+            }
+          }
+          catch(e) {
+            console.log(e)
+            setBlurring(false)
           }
         };
         sendToMediaPipe(); //Start loop
@@ -84,53 +90,58 @@ export default function Camera() {
 
   const onBlurResults = (results: Results) => {
     if (contextRef.current && canvasRef.current) {
-      contextRef.current.save();
+      try {
+        //Creates an empty rectangle
+        contextRef.current.clearRect(
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        );
+  
+        //Draws an image where red indicates a person, and transparent indicates the background
+        contextRef.current.drawImage( 
+          results.segmentationMask,
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        );
+  
+        //Makes any non-transparent pixel black
+        contextRef.current.globalCompositeOperation = "source-out"; //Source-Out :The new shape is drawn where it doesn't overlap the existing canvas content.
+        contextRef.current.fillStyle = "#000000";
+  /*       contextRef.current.fillRect(
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        ); */
+        contextRef.current.filter = "blur(40px)"
+        contextRef.current.drawImage(
+          results.image,
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        );
+        contextRef.current.filter = "blur(0px)"
+        //only overwrite missing pixels
+        contextRef.current.globalCompositeOperation = "destination-atop"; //Only draws on transparent pixels
+        contextRef.current.drawImage(
+          results.image,
+          0,
+          0,
+          canvasRef.current.width,
+          canvasRef.current.height
+        );
+        contextRef.current.restore();
+        contextRef.current.save();
+      }
+      catch(e) {
+        console.log(e)
+      }
 
-      //Creates an empty rectangle
-      contextRef.current.clearRect(
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      );
-
-      //Draws an image where red indicates a person, and transparent indicates the background
-      contextRef.current.drawImage( 
-        results.segmentationMask,
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      );
-
-      //Makes any non-transparent pixel black
-      contextRef.current.globalCompositeOperation = "source-out"; //Source-Out :The new shape is drawn where it doesn't overlap the existing canvas content.
-      contextRef.current.fillStyle = "#000000";
-/*       contextRef.current.fillRect(
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      ); */
-      contextRef.current.filter = "blur(40px)"
-      contextRef.current.drawImage(
-        results.image,
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      );
-      contextRef.current.filter = "blur(0px)"
-      //only overwrite missing pixels
-      contextRef.current.globalCompositeOperation = "destination-atop"; //Only draws on transparent pixels
-      contextRef.current.drawImage(
-        results.image,
-        0,
-        0,
-        canvasRef.current.width,
-        canvasRef.current.height
-      );
-      contextRef.current.restore();
     }
   };
 
@@ -142,6 +153,31 @@ export default function Camera() {
   }, []);
     
   const handleStartCaptureClick = () => {
+    handleBlur();
+    console.log("TEST1")
+
+    const stream = canvasRef.current?.captureStream(15) //15FPS
+    if(!stream) {
+      console.log("Stream not found")
+      return;
+    }
+    setCapturing(true)
+    mediaRecorderRef.current = new MediaRecorder(stream, {
+      mimeType: "video/webm"
+    })
+    //TODO: Try capturing canvas recording instead
+    mediaRecorderRef.current.addEventListener(
+      "dataavailable",
+      (event: BlobEvent) => {
+        if (event.data.size > 0) {
+          setRecordedChunks((prev: Blob[]) => prev.concat(event.data));
+        }
+      }
+    );
+    mediaRecorderRef.current.start();
+
+    console.log("TEST")
+      return;
     navigator.mediaDevices
       .getUserMedia({
         video: { deviceId: { exact: selectedDevice?.deviceId } },
@@ -184,6 +220,7 @@ export default function Camera() {
     }
   }
   
+  //TODO: This is busted and doesn't work
   const handleUpload = async () => {
     console.log(recordedChunks)
     const uploadChunks = await new Blob(recordedChunks, {type: "video/webm"}).text()
@@ -242,7 +279,7 @@ export default function Camera() {
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      if (!cameraRef.current || !studentDetails.data) return;
+      if (!cameraRef.current || !studentDetails.data || !blurring) return;
       const imageSrc = canvasRef.current ?
         canvasRef.current.toDataURL("image/wepb", 0.3)
         :
@@ -265,16 +302,13 @@ export default function Camera() {
           audio={false}
           videoConstraints={{ deviceId: selectedDevice?.deviceId }}
           ref={cameraRef}
-          className="max-h-[50vh] w-full object-contain"
+          className={`max-h-[50vh] w-full object-contain`}
         />
         <canvas
           ref={canvasRef}
-          className="max-h-[50vh] w-full object-contain"
+          className="max-h-[0vh] w-full object-contain"
         />
       </div>
-      <a id="Blur" onClick={handleBlur}>
-        <BlackButton text="Blur" />
-      </a>
       {capturing ? (
         <div className="grid gap-y-2">
           <a onClick={handleStopCaptureClick}>
