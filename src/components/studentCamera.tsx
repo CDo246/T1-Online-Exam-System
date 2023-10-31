@@ -304,27 +304,32 @@ export default function Camera() {
         />
         <canvas ref={canvasRef} className="max-h-[0vh] w-full object-contain" />
       </div>
-      {!studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved && (
-        <>
-          <a onClick={handleFirstCheck}>
-            <BlackButton text="Analyse Image For AI Approval" />
-          </a>
-          <a
-            onClick={async () => {
-              if (!cameraRef.current || !studentDetails.data) return;
-              const imageSrc = cameraRef.current.getScreenshot();
-              console.log(imageSrc);
-              await addDeskImage.mutateAsync({
-                sessionId: studentDetails.data.sessionId,
-                deskImage: imageSrc ?? "",
-              });
-            }}
-          >
-            <BlackButton text="Request Manual Approval" />
-          </a>
-        </>
-      )}
-      {!(!studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved) && !captureCompleted && 
+      {!studentDetails.data?.deskAIApproved &&
+        !studentDetails.data?.deskManuallyApproved && (
+          <>
+            <a onClick={handleFirstCheck}>
+              <BlackButton text="Analyse Image For AI Approval" />
+            </a>
+            <a
+              onClick={async () => {
+                if (!cameraRef.current || !studentDetails.data) return;
+                const imageSrc = cameraRef.current.getScreenshot();
+                console.log(imageSrc);
+                await addDeskImage.mutateAsync({
+                  sessionId: studentDetails.data.sessionId,
+                  deskImage: imageSrc ?? "",
+                });
+              }}
+            >
+              <BlackButton text="Request Manual Approval" />
+            </a>
+          </>
+        )}
+      {!(
+        !studentDetails.data?.deskAIApproved &&
+        !studentDetails.data?.deskManuallyApproved
+      ) &&
+        !captureCompleted && (
           <>
             <Dropdown
               list={devices}
@@ -336,14 +341,14 @@ export default function Camera() {
               <BlackButton text="Start Capture" />
             </a>
           </>
-      }
-      {capturing &&
+        )}
+      {capturing && (
         <div className="grid gap-y-2">
           <a onClick={handleStopCaptureClick}>
             <BlackButton text="Stop Capture" />
           </a>
         </div>
-      }
+      )}
       {recordedChunks.length > 0 && captureCompleted && (
         <div className="grid gap-y-2">
           <a onClick={handleDownload}>
@@ -354,7 +359,6 @@ export default function Camera() {
           </a>
         </div>
       )}
-
     </div>
   );
 }
