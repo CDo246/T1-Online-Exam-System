@@ -304,47 +304,11 @@ export default function Camera() {
         />
         <canvas ref={canvasRef} className="max-h-[0vh] w-full object-contain" />
       </div>
-      {capturing ? (
-        <div className="grid gap-y-2">
-          <a onClick={handleStopCaptureClick}>
-            <BlackButton text="Stop Capture" />
-          </a>
-        </div>
-      ) : (
-        (studentDetails.data?.deskAIApproved ??
-          studentDetails.data?.deskManuallyApproved) &&
-        !captureCompleted && (
-          <>
-            <Dropdown
-              list={devices}
-              handler={(newDeviceIndex: number) =>
-                setSelectedDevice(devices[newDeviceIndex] ?? null)
-              }
-            />
-            <a onClick={handleStartCaptureClick}>
-              <BlackButton text="Start Capture" />
-            </a>
-          </>
-        )
-      )}
-      {recordedChunks.length > 0 && captureCompleted && (
-        <div className="grid gap-y-2">
-          <a onClick={handleDownload}>
-            <BlackButton text="Download" />
-          </a>
-          <a onClick={handleUpload}>
-            <BlackButton text="Upload (Required to pass exam)" />
-          </a>
-        </div>
-      )}
-      {!studentDetails.data?.deskAIApproved &&
-        !studentDetails.data?.deskManuallyApproved && (
+      {!studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved && (
+        <>
           <a onClick={handleFirstCheck}>
             <BlackButton text="Analyse Image For AI Approval" />
           </a>
-        )}
-      {!studentDetails.data?.deskAIApproved &&
-        !studentDetails.data?.deskManuallyApproved && (
           <a
             onClick={async () => {
               if (!cameraRef.current || !studentDetails.data) return;
@@ -358,7 +322,39 @@ export default function Camera() {
           >
             <BlackButton text="Request Manual Approval" />
           </a>
-        )}
+        </>
+      )}
+      {(studentDetails.data?.deskAIApproved || studentDetails.data?.deskManuallyApproved) && !captureCompleted && 
+          <>
+            <Dropdown
+              list={devices}
+              handler={(newDeviceIndex: number) =>
+                setSelectedDevice(devices[newDeviceIndex] ?? null)
+              }
+            />
+            <a onClick={handleStartCaptureClick}>
+              <BlackButton text="Start Capture" />
+            </a>
+          </>
+      }
+      {capturing &&
+        <div className="grid gap-y-2">
+          <a onClick={handleStopCaptureClick}>
+            <BlackButton text="Stop Capture" />
+          </a>
+        </div>
+      }
+      {recordedChunks.length > 0 && captureCompleted && (
+        <div className="grid gap-y-2">
+          <a onClick={handleDownload}>
+            <BlackButton text="Download" />
+          </a>
+          <a onClick={handleUpload}>
+            <BlackButton text="Upload (Required to pass exam)" />
+          </a>
+        </div>
+      )}
+
     </div>
   );
 }
