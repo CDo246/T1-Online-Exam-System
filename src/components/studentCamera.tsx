@@ -324,7 +324,7 @@ export default function Camera() {
           </a>
         </>
       )}
-      {(studentDetails.data?.deskAIApproved || studentDetails.data?.deskManuallyApproved) && !captureCompleted && 
+      {!(!studentDetails.data?.deskAIApproved && !studentDetails.data?.deskManuallyApproved) && !captureCompleted && 
           <>
             <Dropdown
               list={devices}
