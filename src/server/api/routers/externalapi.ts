@@ -1,16 +1,19 @@
-import { TRPCError } from "@trpc/server";
-import { createHash, randomBytes } from "crypto";
-import validator from "validator";
 import { string, z } from "zod";
-import { UserRoles } from "~/utils/enums";
 import {
   createTRPCRouter,
   publicProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-import dotenv from "dotenv";
-import { getToken } from "next-auth/jwt";
 import AWS from "aws-sdk";
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import {
+  S3RequestPresigner,
+  getSignedUrl,
+} from "@aws-sdk/s3-request-presigner";
 
 interface foundObject {
   mid: string;
@@ -108,21 +111,51 @@ export const externalAPIRouter = createTRPCRouter({
 
   //TODO: Not currently implemented
   uploadVideo: publicProcedure
-    .input(z.object({ userEmail: z.string() }))
-    .query(async ({ input, ctx }) => {
-      const user = await ctx.prisma.user.findUnique({
-        where: {
-          email: input.userEmail,
-        },
+    .input(
+      z.object({
+        userEmail: z.string(),
+        sessionId: z.string(),
+        videoFile: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const config = {
+        accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
+        secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
+        region: "ap-southeast-2",
+      };
+      AWS.config.update(config);
+      const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
+
+      const result = await client
+        .putObject({
+          Body: input.videoFile,
+          Bucket: "online-anti-cheat",
+          Key: "failtest8",
+        })
+        .promise();
+      console.log(result);
+
+      return;
+    }),
+
+  uploadPresignedVideo: publicProcedure
+    .input(z.object({ userEmail: z.string(), sessionId: z.string() }))
+    .mutation(({ input, ctx }) => {
+      AWS.config.update({
+        accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
+        secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
+        region: "ap-southeast-2",
+        signatureVersion: "v4",
       });
 
-      if (!user) {
-        throw new Error(`User with email ${input.userEmail} not found`);
-      }
-
-      return {
-        role: user.role,
-      };
+      const client = new AWS.S3();
+      return client.createPresignedPost({
+        Fields: {
+          Key: "SampleKey",
+        },
+        Bucket: "online-anti-cheat",
+      });
     }),
 
   listRecordings: publicProcedure.query(async ({ input, ctx }) => {
