@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import Webcam from "react-webcam";
 import Dropdown from "~/components/Dropdown";
 import { BlackButton } from "./button";
@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { record } from "zod";
 import { Results, SelfieSegmentation } from "@mediapipe/selfie_segmentation";
+import Link from "next/link";
 
 export default function Camera() {
   const [devices, setDevices] = useState<MediaDeviceInfo[] | []>([]);
@@ -15,12 +16,15 @@ export default function Camera() {
     null
   );
   const [capturing, setCapturing] = useState<boolean>(false);
+  const [recording, setRecording] = useState(false); //This is for if the video has actually started recording properly
   const [captureCompleted, setCaptureCompleted] = useState(false);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [imageSegmenter, setImageSegmenter] = useState(null);
+  const [uploaded, setUploaded] = useState(false);
   const cameraRef = useRef<Webcam | null>(null);
   const router = useRouter();
+
+  console.log(recordedChunks.length)
 
   //Blurring-Related content
   const [blurring, setBlurring] = useState<boolean>(false);
@@ -43,9 +47,7 @@ export default function Camera() {
   const addDeskImage = api.examSessions.addDeskImage.useMutation();
   const addLiveFeedImage = api.examSessions.addLiveFeedImage.useMutation();
   const analyseImage = api.externalAPIs.analyseImage.useMutation();
-  const uploadVideo = api.externalAPIs.uploadVideo.useMutation();
-  const uploadPresignedVideo =
-    api.externalAPIs.uploadPresignedVideo.useMutation();
+  const getConfig = api.externalAPIs.getConfig.useMutation();
 
   const handleBlur = () => {
     console.log("Blurring");
@@ -153,19 +155,16 @@ export default function Camera() {
   }, []);
 
   const handleStartCaptureClick = () => {
+    setCapturing(true);
     handleBlur();
-    console.log("TEST1");
-
     const stream = canvasRef.current?.captureStream(15); //15FPS
     if (!stream) {
       console.log("Stream not found");
       return;
     }
-    setCapturing(true);
     mediaRecorderRef.current = new MediaRecorder(stream, {
       mimeType: "video/webm",
     });
-    //TODO: Try capturing canvas recording instead
     mediaRecorderRef.current.addEventListener(
       "dataavailable",
       (event: BlobEvent) => {
@@ -173,31 +172,13 @@ export default function Camera() {
           setRecordedChunks((prev: Blob[]) => prev.concat(event.data));
         }
       }
-    );
-    mediaRecorderRef.current.start();
-
-    console.log("TEST");
-    return;
-    navigator.mediaDevices
-      .getUserMedia({
-        video: { deviceId: { exact: selectedDevice?.deviceId } },
-        audio: true,
-      })
-      .then((stream: MediaStream) => {
-        setCapturing(true);
-        mediaRecorderRef.current = new MediaRecorder(stream, {
-          mimeType: "video/webm",
-        });
-        mediaRecorderRef.current.addEventListener(
-          "dataavailable",
-          (event: BlobEvent) => {
-            if (event.data.size > 0) {
-              setRecordedChunks((prev: Blob[]) => prev.concat(event.data));
-            }
-          }
-        );
-        mediaRecorderRef.current.start();
-      });
+      );
+    mediaRecorderRef.current.addEventListener(
+      "start",
+      () => setRecording(true) //It takes a second for it to start recording, video will be empty otherwise
+      );
+      mediaRecorderRef.current.start();
+      
   };
 
   const handleStopCaptureClick = () => {
@@ -206,58 +187,44 @@ export default function Camera() {
     setCaptureCompleted(true);
   };
 
-  const handleDownload = () => {
-    if (recordedChunks.length) {
-      const downloadBlob = new Blob(recordedChunks, { type: "video/webm" });
-      console.log(downloadBlob);
-      const url = URL.createObjectURL(downloadBlob);
-      const a = document.createElement("a");
-      document.body.appendChild(a);
-      a.href = url;
-      a.download = "react-webcam-stream-capture.webm";
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
+  const handleDownload = async () => {
+    console.log("Downloading")
+    const downloadBlob = new Blob(recordedChunks, { type: "video/webm" });
+    const url = URL.createObjectURL(downloadBlob);
+    const a = document.createElement("a");
+    document.body.appendChild(a);
+    a.href = url;
+    a.download = "react-webcam-stream-capture.webm";
+    a.click();
+    window.URL.revokeObjectURL(url);
+    
   };
 
-  //TODO: This is busted and doesn't work
   const handleUpload = async () => {
-    console.log(recordedChunks);
-    const uploadChunks = await new Blob(recordedChunks, {
-      type: "video/webm",
-    }).text();
-
-    const presignedData = await uploadPresignedVideo.mutateAsync({
-      userEmail: session?.user.email ?? "",
-      sessionId: studentDetails?.data?.sessionId ?? "",
-    });
-    console.log(presignedData);
-    const data: any = {
-      ...presignedData.fields,
-      /*       "Content-Type": "video/webm", */
-      /*       uploadChunks, */
-    };
-    console.log(data);
-
-    const formData = new FormData();
-    for (const name in data) formData.append(name, data[name]);
-
-    const res = await fetch(presignedData.url, {
-      method: "POST",
-      body: formData,
-    });
-    console.log(res);
-
+    console.log("Upload Test")
+    const config = await getConfig.mutateAsync()
+    console.log(config)
+    AWS.config.update(config);
+    const client = new AWS.S3({ params: { Bucket: "online-anti-cheat" } });
     const blob = new Blob(recordedChunks, {
       type: "video/webm",
     });
-    //formData.append('video', blob, 'video.webm');
+    const formData = new FormData();
+    formData.append("video", blob, "video.webm");
 
-    /*     uploadVideo.mutateAsync({
-      userEmail: session?.user.email ?? "",
-      sessionId: studentDetails?.data?.sessionId ?? "",
-      videoFile: uploadChunks,
-    }) */
+    const date = new Date
+    const dateString = date.toString()
+
+    await client
+      .putObject({
+        Body: blob,
+        Bucket: "online-anti-cheat",
+        Key: `${session?.user.name}.webm`,
+        //ContentType: "video/webm",
+      })
+      .promise();
+
+      setUploaded(true)
   };
 
   const handleFirstCheck = async () => {
@@ -329,7 +296,7 @@ export default function Camera() {
         !studentDetails.data?.deskAIApproved &&
         !studentDetails.data?.deskManuallyApproved
       ) &&
-        !captureCompleted && (
+        !captureCompleted && !capturing && (
           <>
             <Dropdown
               list={devices}
@@ -342,14 +309,14 @@ export default function Camera() {
             </a>
           </>
         )}
-      {capturing && (
+      {recording && !captureCompleted && (
         <div className="grid gap-y-2">
           <a onClick={handleStopCaptureClick}>
             <BlackButton text="Stop Capture" />
           </a>
         </div>
       )}
-      {recordedChunks.length > 0 && captureCompleted && (
+      {captureCompleted && !uploaded && (
         <div className="grid gap-y-2">
           <a onClick={handleDownload}>
             <BlackButton text="Download" />
@@ -359,6 +326,14 @@ export default function Camera() {
           </a>
         </div>
       )}
+      {uploaded && 
+        <>
+          <p className="text-center">Your exam has been uploaded, you are free to leave</p>
+          <Link href="/account">
+            <BlackButton text="Return Home" />
+          </Link>
+        </>
+      }
     </div>
   );
 }

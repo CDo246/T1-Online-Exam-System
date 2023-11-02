@@ -14,7 +14,7 @@ export default function Recordings() {
   //list all files
   const listS3Objects = () => {
     try {
-      console.log("Called");
+      console.log("Called")
       if (data) {
         const s3Objects = data.s3Objects;
         setObjects(s3Objects);
@@ -24,24 +24,24 @@ export default function Recordings() {
     }
   };
 
-  useEffect(() => listS3Objects(), [data?.s3Objects]);
+  useEffect(() => listS3Objects(), [data?.s3Objects])
 
-  console.log(objects);
+  console.log(objects)
 
   //download file with objectKey
   const downloadFile = async (objectKey: string) => {
-    console.log("Downloading:");
-    const bucketName = "online-anti-cheat";
-    const res = await fetch(
-      `https://${bucketName}.s3.amazonaws.com/${objectKey}`
-    );
-    console.log(res.body);
-    const newRes = await streamToString(res.body);
-    console.log(newRes);
-    const blob = new Blob([newRes], { type: "video/webm" });
-    console.log(blob);
 
-    console.log("true");
+
+    console.log("Downloading:")
+    const bucketName = "online-anti-cheat";
+    const res = await fetch(`https://${bucketName}.s3.amazonaws.com/${objectKey}`)
+    console.log(res.body)
+    const newRes = await streamToString(res.body)
+    console.log(newRes)
+    const blob = new Blob([newRes], {type: "video/webm"})
+    console.log(blob)
+
+    console.log("true")
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     document.body.appendChild(a);
@@ -49,6 +49,7 @@ export default function Recordings() {
     a.download = "react-webcam-stream-capture.webm";
     a.click();
     window.URL.revokeObjectURL(url);
+    
 
     const link = document.createElement("a");
     link.href = `https://${bucketName}.s3.amazonaws.com/${objectKey}`;
@@ -60,47 +61,45 @@ export default function Recordings() {
   async function streamToString(stream: any) {
     const reader = stream.getReader();
     const textDecoder = new TextDecoder();
-    let result = "";
-
+    let result = '';
+  
     async function read() {
       const { done, value } = await reader.read();
-
+  
       if (done) {
         return result;
       }
-
+  
       result += textDecoder.decode(value, { stream: true });
       return read();
     }
-
+  
     return read();
   }
 
   return (
     <CentredLayout title="Account Validation">
-      <FormBox>
+    <FormBox>
         <Link href="/account">
           <BlackBackButton />
         </Link>
-        <hr />
+        <hr/>
         <p className="text-center text-2xl">Exam Session Video Recordings</p>
         <a onClick={listS3Objects}>
           <BlackButton text="Refresh" />
         </a>
-        <br />
+        <br/>
         <div className="grid grid-cols-[1fr_auto] gap-y-1">
           {objects.map((objectKey, index) => (
             <>
-              <p key={index} className="text-lg font-bold">
-                {objectKey}
-              </p>
+              <p key={index} className="font-bold text-lg">{objectKey}</p>
               <a onClick={() => downloadFile(objectKey)}>
-                <BlackButton text="Download" />
+                <BlackButton text="Download"/>
               </a>
             </>
           ))}
         </div>
-      </FormBox>
-    </CentredLayout>
+    </FormBox>
+   </CentredLayout>
   );
 }

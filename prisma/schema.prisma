@@ -45,8 +45,8 @@ model User {
 
 model Student {
   id               String        @id @default(cuid())
-  studentId        String         @unique
-  verificationCode String           @default("")
+  studentId        String        @unique
+  verificationCode String        @default("")
   imageBase64      String?
   userId           String?       @unique //UserID for identity verification
   user             User?         @relation(fields: [userId], references: [id])
@@ -55,7 +55,7 @@ model Student {
 
 model Examiner {
   id              String           @id @default(cuid())
-  examinerId      String            @unique
+  examinerId      String           @unique
   userId          String           @unique
   user            User             @relation(fields: [userId], references: [id])
   createdSessions CreatedSession[]
@@ -63,7 +63,7 @@ model Examiner {
 
 model CreatedSession {
   id         String        @id @default(cuid())
-  uniqueCode String           @unique
+  uniqueCode String        @unique
   examinerId String
   valid      Boolean       @default(true)
   examiner   Examiner      @relation(fields: [examinerId], references: [id])
@@ -81,6 +81,7 @@ model ExamSession {
   deskAIApproved       Boolean        @default(false) //Do this if the user's desk has been approved by AI
   deskImage            String? //String for capturing an image of the user's desk for manual review if not AI approved
   liveFeedImage        String? //Yes, we're doing the live feed with ASCII-encoded images uploaded to an SQL database
+  recordedVideo        String?
   deskManuallyApproved Boolean        @default(false)
   suspiciousActivity   Boolean        @default(false) // Field for tracking current suspicious activity
   strikes              Int            @default(0)

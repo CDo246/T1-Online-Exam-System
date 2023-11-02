@@ -175,4 +175,14 @@ export const externalAPIRouter = createTRPCRouter({
       s3Objects: s3Objects,
     };
   }),
+
+  getConfig: publicProcedure.mutation(async ({ input, ctx }) => {
+    const config = {
+      accessKeyId: `${process.env.AMAZON_ACCESS_KEY_ID}`,
+      secretAccessKey: `${process.env.AMAZON_SECRET_ACCESS_KEY}`,
+      region: "ap-southeast-2",
+    };
+
+    return config;
+  }),
 });
